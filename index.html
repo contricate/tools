@@ -3,36 +3,37 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Flu Tools Hub</title>
+<title>Flu Tools Pro Hub</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
 <style>
-/* --- Reset --- */
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:'Inter', sans-serif; background:#0f0f0f; color:white; display:flex; flex-direction:column; align-items:center; padding:30px; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: #0f0f0f;
+  color: white;
+  margin: 0; padding: 30px;
+  overflow-x: hidden;
+}
+h1 { text-align: center; color: #9b59b6; font-size: 3em; margin-bottom: 20px; }
 
-/* --- Header --- */
-h1 { font-size:3em; color:#9b59b6; margin-bottom:20px; text-align:center; }
-
-/* --- Tabs --- */
-.tabs { display:flex; margin-bottom:20px; flex-wrap:wrap; justify-content:center; }
-.tab { padding:10px 20px; margin:5px; background:#222; border-radius:12px; cursor:pointer; transition:0.3s; }
+.tabs { display: flex; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
+.tab { padding: 10px 20px; margin:5px; background:#222; border-radius:12px; cursor:pointer; transition:0.3s; }
 .tab:hover, .tab.active { background:#9b59b6; }
 
-/* --- Content --- */
-.content { width:90%; max-width:800px; background:#111; padding:20px; border-radius:15px; min-height:300px; }
+.content { width:90%; max-width:900px; background:#111; padding:20px; border-radius:15px; min-height:300px; margin:auto; }
 
-/* --- Buttons --- */
 .btn { display:inline-block; padding:12px 25px; margin:10px; background:#9b59b6; color:white; text-decoration:none; border-radius:10px; font-weight:bold; transition:0.3s; }
 .btn:hover { background:#8e44ad; }
 
-/* --- Textarea --- */
 textarea { width:100%; height:200px; border-radius:10px; background:#222; color:white; border:none; padding:10px; font-family:'Inter', sans-serif; font-size:1em; resize:none; }
 
-/* --- Password Modal --- */
-#passwordModal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); display:flex; justify-content:center; align-items:center; flex-direction:column; }
+/* Password Modal */
+#passwordModal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); display:flex; justify-content:center; align-items:center; flex-direction:column; z-index:9999; }
 #passwordModal input { padding:15px; border-radius:10px; border:none; width:200px; margin-bottom:15px; text-align:center; }
 #passwordModal button { padding:10px 20px; border:none; border-radius:10px; background:#9b59b6; color:white; cursor:pointer; }
 #passwordModal p { color:red; margin-top:10px; }
+
+/* Music Control */
+#musicControl { position:fixed; bottom:20px; right:20px; background:#222; padding:10px 15px; border-radius:12px; cursor:pointer; color:#9b59b6; font-weight:bold; }
 </style>
 </head>
 <body>
@@ -45,7 +46,7 @@ textarea { width:100%; height:200px; border-radius:10px; background:#222; color:
     <p id="passError"></p>
 </div>
 
-<h1>Flu Tools Hub</h1>
+<h1>Flu Tools Pro Hub</h1>
 
 <!-- Tabs -->
 <div class="tabs">
@@ -79,41 +80,42 @@ textarea { width:100%; height:200px; border-radius:10px; background:#222; color:
     <a class="btn" href="https://tiktok.com" target="_blank">TikTok</a>
 </div>
 
+<!-- Background Music -->
+<audio id="bgMusic" loop>
+  <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+</audio>
+<div id="musicControl" onclick="toggleMusic()">Play Music</div>
+
 <script>
-/* --- Tabs Function --- */
+/* --- Tabs --- */
 function openTab(tabName) {
     let tabs = ['tools','notepad','downloads','links'];
     tabs.forEach(t => document.getElementById(t).style.display = 'none');
     document.getElementById(tabName).style.display = 'block';
-
     document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
     event.currentTarget.classList.add('active');
 }
 
 /* --- Notepad Save --- */
-function saveNote() {
-    localStorage.setItem('fluNote', document.getElementById('noteArea').value);
-    alert('Saved!');
-}
-function clearNote() {
-    document.getElementById('noteArea').value = '';
-    localStorage.removeItem('fluNote');
-}
-
-/* --- Load Note --- */
+function saveNote() { localStorage.setItem('fluNote', document.getElementById('noteArea').value); alert('Saved!'); }
+function clearNote() { document.getElementById('noteArea').value = ''; localStorage.removeItem('fluNote'); }
 document.getElementById('noteArea').value = localStorage.getItem('fluNote') || '';
 
 /* --- Password --- */
 function checkPassword() {
-    let password = '5782'; // your secret password
+    let password = '5782';
     let input = document.getElementById('passInput').value;
-    if(input === password) {
-        document.getElementById('passwordModal').style.display = 'none';
-    } else {
-        document.getElementById('passError').innerText = 'Incorrect password!';
-    }
+    if(input === password){ document.getElementById('passwordModal').style.display='none'; }
+    else{ document.getElementById('passError').innerText='Incorrect password!'; }
+}
+
+/* --- Music --- */
+function toggleMusic(){
+    let music = document.getElementById('bgMusic');
+    let control = document.getElementById('musicControl');
+    if(music.paused){ music.play(); control.innerText='Pause Music'; }
+    else{ music.pause(); control.innerText='Play Music'; }
 }
 </script>
-
 </body>
 </html>
