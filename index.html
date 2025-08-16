@@ -1,447 +1,378 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Flu Tools</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-  <meta name="color-scheme" content="dark light">
-  <style>
-    :root{
-      --bg:#0a0b10; --bg2:#0f1220; --card:#121527; --surface:#171a30; --muted:#aab0c0; --txt:#e9eef7;
-      --accent:#30d5c8; --accent2:#8a5cff; --ok:#20c997; --warn:#ffb020; --danger:#ff5861;
-      --ring:0 0 0 1px rgba(255,255,255,.06), 0 10px 30px rgba(0,0,0,.35);
-      --r:18px;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{margin:0; font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial; color:var(--txt); background:
-      radial-gradient(900px 600px at -10% -10%, rgba(48,213,200,.15), transparent 40%),
-      radial-gradient(900px 600px at 110% 0%, rgba(138,92,255,.10), transparent 40%),
-      linear-gradient(180deg, var(--bg), var(--bg2));
-      display:grid; grid-template-columns: 250px 1fr;
-    }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Flu Tools</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<meta name="color-scheme" content="dark light">
+<style>
+:root{
+  --bg:#0a0b10; --bg2:#0f1220; --card:#121527; --surface:#171a30; --muted:#aab0c0; --txt:#e9eef7;
+  --accent:#30d5c8; --accent2:#8a5cff; --ok:#20c997; --warn:#ffb020; --danger:#ff5861;
+  --ring:0 0 0 1px rgba(255,255,255,.06), 0 10px 30px rgba(0,0,0,.35);
+  --r:18px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial; color:var(--txt);
+  background:
+    radial-gradient(900px 600px at -10% -10%, rgba(48,213,200,.15), transparent 40%),
+    radial-gradient(900px 600px at 110% 0%, rgba(138,92,255,.10), transparent 40%),
+    linear-gradient(180deg, var(--bg), var(--bg2));
+  display:grid; grid-template-columns: 250px 1fr;
+}
+/* AUTH GATE */
+#gate{position:fixed; inset:0; display:grid; place-items:center; backdrop-filter: blur(8px);
+  background: linear-gradient(180deg, rgba(10,11,16,.8), rgba(10,11,16,.92)); z-index:9999}
+#gate .panel{width:min(520px,95vw); background:var(--card); border-radius:22px; padding:22px; box-shadow:var(--ring); border:1px solid rgba(255,255,255,.08)}
+.brand{font-weight:800; font-size:24px; letter-spacing:.3px}
+.sub{color:var(--muted); font-size:13px}
+.row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+input[type="password"], input[type="text"], select, textarea{ width:100%; background:var(--surface); color:var(--txt);
+  border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:12px 12px; outline:none }
+.btn{ cursor:pointer; user-select:none; border:1px solid rgba(255,255,255,.08); padding:12px 14px; border-radius:14px; background:var(--surface)}
+.btn.primary{background:linear-gradient(180deg, var(--accent), #20a6a4); color:#061212; font-weight:800}
+.btn.ghost{background:transparent}
+.hint{font-size:12px; color:var(--muted)}
+.err{color:#ff8c98; font-size:12px; min-height:18px}
 
-    /* AUTH GATE */
-    #gate{position:fixed; inset:0; display:grid; place-items:center; backdrop-filter: blur(8px);
-      background: linear-gradient(180deg, rgba(10,11,16,.8), rgba(10,11,16,.92)); z-index:9999}
-    #gate .panel{width:min(520px,95vw); background:var(--card); border-radius:22px; padding:22px; box-shadow:var(--ring); border:1px solid rgba(255,255,255,.08)}
-    .brand{font-weight:800; font-size:24px; letter-spacing:.3px}
-    .sub{color:var(--muted); font-size:13px}
-    .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
-    input[type="password"], input[type="text"], select{ width:100%; background:var(--surface); color:var(--txt);
-      border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:12px 12px; outline:none }
-    .btn{ cursor:pointer; user-select:none; border:1px solid rgba(255,255,255,.08); padding:12px 14px; border-radius:14px; background:var(--surface)}
-    .btn.primary{background:linear-gradient(180deg, var(--accent), #20a6a4); color:#061212; font-weight:800}
-    .btn.ghost{background:transparent}
-    .hint{font-size:12px; color:var(--muted)}
-    .err{color:#ff8c98; font-size:12px; min-height:18px}
+aside{padding:18px; border-right:1px solid rgba(255,255,255,.08); background:rgba(0,0,0,.25); backdrop-filter: blur(6px);}
+nav a{display:flex; gap:10px; padding:10px 12px; margin:6px 0; text-decoration:none; color:var(--txt); border-radius:12px; font-weight:600}
+nav a:hover{background:rgba(255,255,255,.06)}
+nav a.active{background:linear-gradient(90deg, rgba(48,213,200,.18), rgba(138,92,255,.18)); outline:1px solid rgba(255,255,255,.1)}
 
-    aside{padding:18px; border-right:1px solid rgba(255,255,255,.08); background:rgba(0,0,0,.25); backdrop-filter: blur(6px);}
-    nav a{display:flex; gap:10px; padding:10px 12px; margin:6px 0; text-decoration:none; color:var(--txt); border-radius:12px; font-weight:600}
-    nav a:hover{background:rgba(255,255,255,.06)}
-    nav a.active{background:linear-gradient(90deg, rgba(48,213,200,.18), rgba(138,92,255,.18)); outline:1px solid rgba(255,255,255,.1)}
+main{padding:24px 28px}
+h1{margin:0 0 18px; font-size:34px}
+.grid{display:grid; grid-template-columns: 1.05fr .95fr; gap:18px}
+.card{background:var(--card); border:1px solid rgba(255,255,255,.08); border-radius:var(--r); padding:16px; box-shadow:var(--ring)}
+label{font-size:12px; color:var(--muted); display:block; margin:6px 0}
+.muted{color:var(--muted); font-size:12px}
+.split{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+.stack{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+.preview{width:100%; aspect-ratio:16/9; background:#07080e; border-radius:14px; overflow:hidden; border:1px solid rgba(255,255,255,.08)}
+video, canvas{width:100%; height:100%; object-fit:cover}
 
-    main{padding:24px 28px}
-    h1{margin:0 0 18px; font-size:34px}
-    .grid{display:grid; grid-template-columns: 1.05fr .95fr; gap:18px}
-    .card{background:var(--card); border:1px solid rgba(255,255,255,.08); border-radius:var(--r); padding:16px; box-shadow:var(--ring)}
-    label{font-size:12px; color:var(--muted); display:block; margin:6px 0}
-    .muted{color:var(--muted); font-size:12px}
-    .split{display:grid; grid-template-columns:1fr 1fr; gap:12px}
-    .stack{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
-    .preview{width:100%; aspect-ratio:16/9; background:#07080e; border-radius:14px; overflow:hidden; border:1px solid rgba(255,255,255,.08)}
-    video, canvas{width:100%; height:100%; object-fit:cover}
-
-    @media (max-width:980px){ body{grid-template-columns:1fr} .grid{grid-template-columns:1fr} }
-  </style>
+@media (max-width:980px){ body{grid-template-columns:1fr} .grid{grid-template-columns:1fr} }
+</style>
 </head>
 <body>
-  <!-- AUTH GATE -->
-  <div id="gate" aria-hidden="true">
-    <div class="panel">
-      <div class="row" style="justify-content:space-between">
-        <div class="brand">Flu Tools – Access</div>
-        <div class="sub">Private session</div>
-      </div>
-      <div style="height:12px"></div>
-      <label>Enter passcode</label>
-      <input id="pw" type="password" inputmode="numeric" autocomplete="current-password" placeholder="••••" />
-      <div class="err" id="err"></div>
-      <div class="row" style="justify-content:space-between">
-        <button id="enter" class="btn primary">Unlock</button>
-        <span class="hint">Attempts left: <b id="left">5</b></span>
-      </div>
-      <div id="o" data-a="Zmx1Ojo=" data-b="LXNwZWM6OkEyOTo6" data-c="a2V5OjpkZXJpdmU6OjEwMDAwMA==" style="display:none"></div>
+<!-- AUTH GATE -->
+<div id="gate" aria-hidden="true">
+  <div class="panel">
+    <div class="row" style="justify-content:space-between">
+      <div class="brand">Flu Tools – Access</div>
+      <div class="sub">Private session</div>
+    </div>
+    <div style="height:12px"></div>
+    <label>Enter passcode</label>
+    <input id="pw" type="password" inputmode="numeric" autocomplete="current-password" placeholder="••••" />
+    <div class="err" id="err"></div>
+    <div class="row" style="justify-content:space-between">
+      <button id="enter" class="btn primary">Unlock</button>
+      <span class="hint">Attempts left: <b id="left">5</b></span>
     </div>
   </div>
+</div>
 
-  <aside>
-    <div class="brand">Flu Tools</div>
-    <nav>
-      <a href="#webcam">Webcam</a>
-      <a href="#screen">Screen Recorder</a>
-      <a href="#voice">Voice</a>
-      <a href="#snapshot">Snapshot</a>
-      <a href="#files">File Tools</a>
-      <a href="#text">Text Tools</a>
-      <a href="#clipboard">Clipboard</a>
-      <a href="#network">Network</a>
-      <a href="#settings">Settings</a>
-    </nav>
-    <div class="muted" style="margin-top:8px">Hosted on GitHub Pages</div>
-  </aside>
+<aside>
+  <div class="brand">Flu Tools</div>
+  <nav>
+    <a href="#webcam">Webcam</a>
+    <a href="#screen">Screen Recorder</a>
+    <a href="#voice">Voice</a>
+    <a href="#snapshot">Snapshot</a>
+    <a href="#files">File Tools</a>
+    <a href="#text">Text Tools</a>
+    <a href="#clipboard">Clipboard</a>
+    <a href="#network">Network</a>
+    <a href="#discord">Discord Panel</a>
+    <a href="#settings">Settings</a>
+  </nav>
+  <div class="muted" style="margin-top:8px">Hosted on GitHub Pages</div>
+</aside>
 
-  <main>
-    <h1 id="title">Webcam</h1>
+<main>
+<h1 id="title">Webcam</h1>
 
-    <!-- WEBCAM -->
-    <section id="webcam" class="grid">
-      <div class="card">
-        <div class="split">
-          <div>
-            <label>Camera</label>
-            <select id="camSel"></select>
-          </div>
-          <div>
-            <label>Microphone</label>
-            <select id="micSel"></select>
-          </div>
-        </div>
-        <div class="stack" style="margin:10px 0 6px">
-          <button class="btn" id="camRefresh">Refresh</button>
-          <button class="btn" id="camPreview">Preview</button>
-          <button class="btn" id="camRecord">Record</button>
-          <button class="btn" id="camStop" disabled>Stop</button>
-          <a class="btn" id="camDownload" style="display:none" download="flu-capture.webm">Download</a>
-        </div>
-        <label><input type="checkbox" id="includeSystem"/> Include desktop audio mix</label>
-        <pre class="card" style="max-height:180px; overflow:auto" id="devList">—</pre>
+<!-- WEBCAM -->
+<section id="webcam" class="grid">
+  <div class="card">
+    <div class="split">
+      <div>
+        <label>Camera</label>
+        <select id="camSel"></select>
       </div>
-      <div class="card">
-        <div class="preview"><video id="camPrev" autoplay playsinline muted></video></div>
-        <div class="muted" id="camInfo" style="margin-top:8px">—</div>
+      <div>
+        <label>Microphone</label>
+        <select id="micSel"></select>
       </div>
-    </section>
+    </div>
+    <div class="stack" style="margin:10px 0 6px">
+      <button class="btn" id="camRefresh">Refresh</button>
+      <button class="btn" id="camPreview">Preview</button>
+      <button class="btn" id="camRecord">Record</button>
+      <button class="btn" id="camStop" disabled>Stop</button>
+      <a class="btn" id="camDownload" style="display:none" download="flu-capture.webm">Download</a>
+    </div>
+    <label><input type="checkbox" id="includeSystem"/> Include desktop audio mix</label>
+    <pre class="card" style="max-height:180px; overflow:auto" id="devList">—</pre>
+  </div>
+  <div class="card">
+    <div class="preview"><video id="camPrev" autoplay playsinline muted></video></div>
+    <div class="muted" id="camInfo" style="margin-top:8px">—</div>
+  </div>
+</section>
 
-    <!-- SCREEN RECORDER -->
-    <section id="screen" class="card" style="display:none">
-      <h2>Screen Recorder</h2>
-      <div class="stack">
-        <button class="btn" id="scrStart">Pick Screen/Window</button>
-        <button class="btn" id="scrStop" disabled>Stop</button>
-        <a class="btn" id="scrDownload" style="display:none" download="flu-screen.webm">Download</a>
-      </div>
-      <div class="preview" style="margin-top:10px"><video id="scrPrev" autoplay playsinline muted></video></div>
-    </section>
+<!-- SCREEN RECORDER -->
+<section id="screen" class="card" style="display:none">
+  <h2>Screen Recorder</h2>
+  <div class="stack">
+    <button class="btn" id="scrStart">Pick Screen/Window</button>
+    <button class="btn" id="scrStop" disabled>Stop</button>
+    <a class="btn" id="scrDownload" style="display:none" download="flu-screen.webm">Download</a>
+  </div>
+  <div class="preview" style="margin-top:10px"><video id="scrPrev" autoplay playsinline muted></video></div>
+</section>
 
-    <!-- VOICE -->
-    <section id="voice" class="card" style="display:none">
-      <h2>Voice Recorder</h2>
-      <div class="stack">
-        <button class="btn" id="vStart">Start</button>
-        <button class="btn" id="vStop" disabled>Stop</button>
-        <a class="btn" id="vDownload" style="display:none" download="flu-voice.webm">Download</a>
-      </div>
-      <audio id="vPlayer" controls style="width:100%; margin-top:10px"></audio>
-    </section>
+<!-- VOICE -->
+<section id="voice" class="card" style="display:none">
+  <h2>Voice Recorder</h2>
+  <div class="stack">
+    <button class="btn" id="vStart">Start</button>
+    <button class="btn" id="vStop" disabled>Stop</button>
+    <a class="btn" id="vDownload" style="display:none" download="flu-voice.webm">Download</a>
+  </div>
+  <audio id="vPlayer" controls style="width:100%; margin-top:10px"></audio>
+</section>
 
-    <!-- SNAPSHOT -->
-    <section id="snapshot" class="grid" style="display:none">
-      <div class="card">
-        <div class="stack">
-          <button class="btn" id="snapPreview">Preview Camera</button>
-          <button class="btn" id="takeSnap" disabled>Take Snapshot</button>
-          <a class="btn" id="snapDownload" style="display:none" download="flu-snapshot.png">Download PNG</a>
-        </div>
-        <div class="preview" style="margin-top:10px"><video id="snapPrev" autoplay playsinline muted></video></div>
-      </div>
-      <div class="card">
-        <div class="preview"><canvas id="snapCanvas"></canvas></div>
-        <div class="muted" style="margin-top:8px">Tip: snapshots are 16:9 of the live feed.</div>
-      </div>
-    </section>
+<!-- SNAPSHOT -->
+<section id="snapshot" class="grid" style="display:none">
+  <div class="card">
+    <div class="stack">
+      <button class="btn" id="snapPreview">Preview Camera</button>
+      <button class="btn" id="takeSnap" disabled>Take Snapshot</button>
+      <a class="btn" id="snapDownload" style="display:none" download="flu-snapshot.png">Download PNG</a>
+    </div>
+    <div class="preview" style="margin-top:10px"><video id="snapPrev" autoplay playsinline muted></video></div>
+  </div>
+  <div class="card">
+    <div class="preview"><canvas id="snapCanvas"></canvas></div>
+    <div class="muted" style="margin-top:8px">Tip: snapshots are 16:9 of the live feed.</div>
+  </div>
+</section>
 
-    <!-- FILE TOOLS -->
-    <section id="files" class="card" style="display:none">
-      <h2>File Tools</h2>
-      <label>Image → Base64</label>
-      <input type="file" id="imgInput" accept="image/*" />
-      <textarea id="b64Out" class="card" style="width:100%; height:160px; background:var(--surface); resize:vertical"></textarea>
-      <div class="stack">
-        <button class="btn" id="copyB64">Copy</button>
-        <button class="btn" id="clearB64">Clear</button>
-      </div>
-    </section>
+<!-- FILE TOOLS -->
+<section id="files" class="card" style="display:none">
+  <h2>File Tools</h2>
+  <label>Image → Base64</label>
+  <input type="file" id="imgInput" accept="image/*" />
+  <textarea id="b64Out" class="card" style="width:100%; height:160px; background:var(--surface); resize:vertical"></textarea>
+  <div class="stack">
+    <button class="btn" id="copyB64">Copy</button>
+    <button class="btn" id="clearB64">Clear</button>
+  </div>
+</section>
 
-    <!-- TEXT TOOLS -->
-    <section id="text" class="card" style="display:none">
-      <h2>Text Tools</h2>
-      <textarea id="txtIn" class="card" style="width:100%; height:160px; background:var(--surface); resize:vertical" placeholder="Paste text…"></textarea>
-      <div class="stack">
-        <button class="btn" id="wcBtn">Count Words/Chars</button>
-        <span class="muted" id="wcInfo">—</span>
-      </div>
-    </section>
+<!-- TEXT TOOLS -->
+<section id="text" class="card" style="display:none">
+  <h2>Text Tools</h2>
+  <textarea id="txtIn" class="card" style="width:100%; height:160px; background:var(--surface); resize:vertical" placeholder="Paste text…"></textarea>
+  <div class="stack">
+    <button class="btn" id="wcBtn">Count Words/Chars</button>
+    <span class="muted" id="wcInfo">—</span>
+  </div>
+</section>
 
-    <!-- CLIPBOARD -->
-    <section id="clipboard" class="card" style="display:none">
-      <h2>Clipboard</h2>
-      <div class="stack">
-        <button class="btn" id="clipRead">Read Text</button>
-        <button class="btn" id="clipWrite">Write Sample Text</button>
-      </div>
-      <pre id="clipOut" class="card" style="margin-top:10px; max-height:160px; overflow:auto">—</pre>
-    </section>
+<!-- CLIPBOARD -->
+<section id="clipboard" class="card" style="display:none">
+  <h2>Clipboard</h2>
+  <div class="stack">
+    <button class="btn" id="clipRead">Read Text</button>
+    <button class="btn" id="clipWrite">Write Sample Text</button>
+  </div>
+  <pre id="clipOut" class="card" style="margin-top:10px; max-height:160px; overflow:auto">—</pre>
+</section>
 
-    <!-- NETWORK -->
-    <section id="network" class="card" style="display:none">
-      <h2>Network</h2>
-      <div class="split">
-        <div>
-          <label>URL to fetch</label>
-          <input id="urlIn" type="text" placeholder="https://example.com" value="https://example.com" />
-        </div>
-        <div class="stack" style="align-items:flex-end">
-          <button class="btn" id="httpGet">GET</button>
-          <button class="btn" id="httpHead">HEAD</button>
-        </div>
-      </div>
-      <pre id="netOut" class="card" style="margin-top:10px; max-height:240px; overflow:auto">—</pre>
-    </section>
+<!-- NETWORK -->
+<section id="network" class="card" style="display:none">
+  <h2>Network</h2>
+  <div class="split">
+    <div>
+      <label>URL to fetch</label>
+      <input id="urlIn" type="text" placeholder="https://example.com" value="https://example.com" />
+    </div>
+    <div class="stack" style="align-items:flex-end">
+      <button class="btn" id="httpGet">GET</button>
+      <button class="btn" id="httpHead">HEAD</button>
+    </div>
+  </div>
+  <pre id="netOut" class="card" style="margin-top:10px; max-height:240px; overflow:auto">—</pre>
+</section>
 
-    <!-- SETTINGS -->
-    <section id="settings" class="card" style="display:none">
-      <h2>Settings</h2>
-      <label><input type="checkbox" id="autoTheme"> Auto theme based on system</label>
-      <div class="muted">Your unlock is remembered for this tab only (sessionStorage).
-      <br/>Forgotten on tab close.</div>
-    </section>
-  </main>
+<!-- DISCORD PANEL -->
+<section id="discord" class="card" style="display:none">
+  <h2>Discord Helper</h2>
+  <div class="stack">
+    <button class="btn" onclick="mockDiscord('!userinfo')">!userinfo</button>
+    <button class="btn" onclick="mockDiscord('!mutuals')">!mutuals</button>
+    <button class="btn" onclick="mockDiscord(';weekly')">;weekly</button>
+    <button class="btn" onclick="mockDiscord(';monthly')">;monthly</button>
+    <button class="btn" onclick="mockDiscord('serverinfo')">serverinfo</button>
+  </div>
+  <pre id="discordOut" class="card" style="margin-top:10px; max-height:300px; overflow:auto">—</pre>
+</section>
 
-  <script>
-    /*****************
-     * Simple router *
-     *****************/
-    const links=[...document.querySelectorAll('nav a')];
-    function setRoute(){
-      const hash=(location.hash||'#webcam').replace('#','');
-      links.forEach(a=>a.classList.toggle('active', a.getAttribute('href')==='#'+hash));
-      document.getElementById('title').textContent=hash.replace(/^[a-z]/,m=>m.toUpperCase());
-      ['webcam','screen','voice','snapshot','files','text','clipboard','network','settings'].forEach(id=>{
-        const el=document.getElementById(id); if(el) el.style.display=(id===hash?'grid':'none');
-        if(['screen','voice','files','text','clipboard','network','settings'].includes(id)){
-          if(el) el.style.display=(id===hash?'block':'none');
-        }
-      });
-    }
-    addEventListener('hashchange', setRoute);
+<!-- SETTINGS -->
+<section id="settings" class="card" style="display:none">
+  <h2>Settings</h2>
+  <label><input type="checkbox" id="autoTheme"> Auto theme based on system</label>
+  <div class="muted">Your unlock is remembered for this tab only (sessionStorage).<br/>Forgotten on tab close.</div>
+</section>
 
-    /***********************
-     * Auth (client-side)  *
-     * NOTE: Client-only auth can be inspected; this is best-effort.
-     ***********************/
-    const gate=document.getElementById('gate');
-    const err=document.getElementById('err');
-    const left=document.getElementById('left');
-    const enter=document.getElementById('enter');
-    const pw=document.getElementById('pw');
+<script>
+// ---------- ROUTER ----------
+const links=[...document.querySelectorAll('nav a')];
+function setRoute(){
+  const hash=(location.hash||'#webcam').replace('#','');
+  links.forEach(a=>a.classList.toggle('active', a.getAttribute('href')==='#'+hash));
+  document.getElementById('title').textContent=hash.replace(/^[a-z]/,m=>m.toUpperCase());
+  ['webcam','screen','voice','snapshot','files','text','clipboard','network','discord','settings'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.display=(id===hash?['webcam','snapshot'].includes(id)?'grid':'block':'none');
+  });
+}
+addEventListener('hashchange', setRoute);
 
-    const MAX_TRIES=5, LOCK_SECS=120; // lockout 2 minutes
-    function tries(){ return +(sessionStorage.getItem('tries')||0); }
-    function setTries(n){ sessionStorage.setItem('tries', String(n)); left.textContent=String(MAX_TRIES-n); }
+// ---------- AUTH ----------
+const gate=document.getElementById('gate');
+const err=document.getElementById('err');
+const left=document.getElementById('left');
+const pwInput=document.getElementById('pw');
+let attempts=5;
+document.getElementById('enter').onclick=()=>{
+  if(pwInput.value==='5782'){ gate.style.display='none'; sessionStorage.setItem('unlocked','1'); }
+  else{ attempts--; err.textContent='Wrong passcode'; left.textContent=attempts; if(attempts<=0){pwInput.disabled=true;}} 
+};
+if(sessionStorage.getItem('unlocked')) gate.style.display='none';
 
-    async function sha256Hex(buf){
-      const hash=await crypto.subtle.digest('SHA-256', buf);
-      return [...new Uint8Array(hash)].map(b=>b.toString(16).padStart(2,'0')).join('');
-    }
-    function t2buf(txt){ return new TextEncoder().encode(txt); }
+// ---------- WEBCAM ----------
+let camStream, camRecorder, camData=[];
+const camPrev=document.getElementById('camPrev');
+const camDownload=document.getElementById('camDownload');
+async function refreshCam(){
+  const devices=await navigator.mediaDevices.enumerateDevices();
+  const cams=devices.filter(d=>d.kind==='videoinput');
+  const mics=devices.filter(d=>d.kind==='audioinput');
+  const camSel=document.getElementById('camSel'), micSel=document.getElementById('micSel');
+  camSel.innerHTML=''; cams.forEach(d=>camSel.add(new Option(d.label,d.deviceId)));
+  micSel.innerHTML=''; mics.forEach(d=>micSel.add(new Option(d.label,d.deviceId)));
+  document.getElementById('devList').textContent=JSON.stringify(devices,null,2);
+}
+document.getElementById('camRefresh').onclick=refreshCam;
+document.getElementById('camPreview').onclick=async()=>{
+  if(camStream) camStream.getTracks().forEach(t=>t.stop());
+  camStream=await navigator.mediaDevices.getUserMedia({
+    video:{deviceId:document.getElementById('camSel').value||undefined},
+    audio:document.getElementById('micSel').value?{deviceId:document.getElementById('micSel').value}:false
+  });
+  camPrev.srcObject=camStream;
+};
+document.getElementById('camRecord').onclick=()=>{
+  camData=[]; camRecorder=new MediaRecorder(camStream); camRecorder.ondataavailable=e=>camData.push(e.data);
+  camRecorder.onstop=()=>{ camDownload.href=URL.createObjectURL(new Blob(camData,{type:'video/webm'})); camDownload.style.display='inline-block'; };
+  camRecorder.start(); document.getElementById('camStop').disabled=false;
+};
+document.getElementById('camStop').onclick=()=>{ camRecorder.stop(); document.getElementById('camStop').disabled=true; };
 
-    // Stored verifier = SHA-256( PBKDF2( pass, salt, 100000, 32, 'SHA-256') )
-    // salt + verifier are obfuscated into data attributes, reassembled at runtime
-    const o=document.getElementById('o');
-    function deob(x){ try{ return atob(x).split('::').reverse().join(':'); }catch(e){ return ''; } }
+// ---------- SCREEN ----------
+let scrStream, scrRecorder, scrData=[];
+const scrPrev=document.getElementById('scrPrev'); 
+document.getElementById('scrStart').onclick=async()=>{
+  scrStream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:true});
+  scrPrev.srcObject=scrStream;
+  scrData=[]; scrRecorder=new MediaRecorder(scrStream); scrRecorder.ondataavailable=e=>scrData.push(e.data);
+  scrRecorder.onstop=()=>{ document.getElementById('scrDownload').href=URL.createObjectURL(new Blob(scrData,{type:'video/webm'})); document.getElementById('scrDownload').style.display='inline-block';};
+  scrRecorder.start(); document.getElementById('scrStop').disabled=false;
+};
+document.getElementById('scrStop').onclick=()=>{ scrRecorder.stop(); document.getElementById('scrStop').disabled=true; };
 
-    async function deriveVerifier(pass){
-      const salt = deob(o.dataset.a)+deob(o.dataset.b).slice(0,4)+deob(o.dataset.c).slice(-4); // pseudo-obfuscation
-      const keyMaterial = await crypto.subtle.importKey('raw', t2buf(pass), 'PBKDF2', false, ['deriveBits']);
-      const bits = await crypto.subtle.deriveBits({name:'PBKDF2', salt:t2buf(salt), iterations:100000, hash:'SHA-256'}, keyMaterial, 256);
-      const v = await sha256Hex(bits);
-      return {salt, v};
-    }
+// ---------- VOICE ----------
+let vStream, vRecorder, vData=[];
+const vPlayer=document.getElementById('vPlayer');
+document.getElementById('vStart').onclick=async()=>{
+  vStream=await navigator.mediaDevices.getUserMedia({audio:true});
+  vData=[]; vRecorder=new MediaRecorder(vStream); vRecorder.ondataavailable=e=>vData.push(e.data);
+  vRecorder.onstop=()=>{ vPlayer.src=URL.createObjectURL(new Blob(vData,{type:'audio/webm'})); document.getElementById('vDownload').href=vPlayer.src; document.getElementById('vDownload').style.display='inline-block';};
+  vRecorder.start(); document.getElementById('vStop').disabled=false;
+};
+document.getElementById('vStop').onclick=()=>{ vRecorder.stop(); document.getElementById('vStop').disabled=true; };
 
-    // Precomputed verifier for password "5782" with the above salt logic
-    // To make it non-obvious, we split it and store dispersed
-    const V_PARTS=[
-      '6e2f9a3d2','5a6f0b8d3c','d2a9b7d1c','f1c88c3a8','8a2e7d5c6','3c1f9b0e2','9d7a6b551','e1' // joined then sliced
-    ];
-    const V_JOINED=(V_PARTS.join('')).slice(3, 3+64); // take 64 hex chars starting at offset 3
+// ---------- SNAPSHOT ----------
+let snapStream;
+const snapPrev=document.getElementById('snapPrev');
+const snapCanvas=document.getElementById('snapCanvas');
+const snapCtx=snapCanvas.getContext('2d');
+document.getElementById('snapPreview').onclick=async()=>{
+  snapStream=await navigator.mediaDevices.getUserMedia({video:true});
+  snapPrev.srcObject=snapStream;
+  document.getElementById('takeSnap').disabled=false;
+};
+document.getElementById('takeSnap').onclick=()=>{
+  snapCanvas.width=640; snapCanvas.height=360;
+  snapCtx.drawImage(snapPrev,0,0,640,360);
+  document.getElementById('snapDownload').href=snapCanvas.toDataURL(); document.getElementById('snapDownload').style.display='inline-block';
+};
 
-    async function tryUnlock(){
-      const now=Date.now();
-      const lockUntil=+(sessionStorage.getItem('lockUntil')||0);
-      if(now<lockUntil){ err.textContent=`Locked. Try again in ${Math.ceil((lockUntil-now)/1000)}s`; return; }
+// ---------- FILE TOOLS ----------
+document.getElementById('imgInput').onchange=e=>{
+  const file=e.target.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>document.getElementById('b64Out').value=reader.result;
+  reader.readAsDataURL(file);
+};
+document.getElementById('copyB64').onclick=()=>navigator.clipboard.writeText(document.getElementById('b64Out').value);
+document.getElementById('clearB64').onclick=()=>document.getElementById('b64Out').value='';
 
-      const pass=pw.value.trim();
-      const {v}=await deriveVerifier(pass);
-      if(v===V_JOINED){
-        sessionStorage.setItem('flu.session','ok');
-        gate.style.display='none';
-        err.textContent='';
-        setRoute();
-        return;
-      }
-      const n=tries()+1; setTries(n);
-      if(n>=MAX_TRIES){ sessionStorage.setItem('lockUntil', String(Date.now()+LOCK_SECS*1000)); setTries(0); }
-      err.textContent='Incorrect passcode';
-      pw.select();
-    }
+// ---------- TEXT TOOLS ----------
+document.getElementById('wcBtn').onclick=()=>{
+  const val=document.getElementById('txtIn').value;
+  const words=val.trim().split(/\s+/).filter(Boolean).length;
+  const chars=val.length;
+  document.getElementById('wcInfo').textContent=`Words: ${words}, Characters: ${chars}`;
+};
 
-    enter.addEventListener('click', tryUnlock);
-    pw.addEventListener('keydown', e=>{ if(e.key==='Enter') tryUnlock(); });
+// ---------- CLIPBOARD ----------
+document.getElementById('clipRead').onclick=async()=>document.getElementById('clipOut').textContent=await navigator.clipboard.readText();
+document.getElementById('clipWrite').onclick=()=>navigator.clipboard.writeText('Sample text from Flu Tools');
 
-    (function initGate(){ setTries(tries()); if(sessionStorage.getItem('flu.session')==='ok'){ gate.style.display='none'; }})();
+// ---------- NETWORK ----------
+document.getElementById('httpGet').onclick=async()=>{
+  const url=document.getElementById('urlIn').value;
+  try{ const res=await fetch(url); const txt=await res.text(); document.getElementById('netOut').textContent=txt.slice(0,2000)+'\n...'; }
+  catch(e){document.getElementById('netOut').textContent=e}
+};
+document.getElementById('httpHead').onclick=async()=>{
+  const url=document.getElementById('urlIn').value;
+  try{ const res=await fetch(url,{method:'HEAD'}); document.getElementById('netOut').textContent=JSON.stringify([...res.headers],null,2); }
+  catch(e){document.getElementById('netOut').textContent=e}
+};
 
-    /*****************
-     * Media helpers *
-     *****************/
-    const camSel=document.getElementById('camSel');
-    const micSel=document.getElementById('micSel');
-    const devList=document.getElementById('devList');
-    const camPrev=document.getElementById('camPrev');
-    const camInfo=document.getElementById('camInfo');
-    const includeSystem=document.getElementById('includeSystem');
+// ---------- DISCORD PANEL ----------
+function mockDiscord(cmd){
+  document.getElementById('discordOut').textContent=`Executed: ${cmd}\n\nMock result:\n`+JSON.stringify({user:'Flu',contrib:42,mutuals:10},null,2);
+}
 
-    const camRefresh=document.getElementById('camRefresh');
-    const camPreview=document.getElementById('camPreview');
-    const camRecord=document.getElementById('camRecord');
-    const camStop=document.getElementById('camStop');
-    const camDownload=document.getElementById('camDownload');
+// ---------- SETTINGS ----------
+document.getElementById('autoTheme').onchange=e=>{
+  document.documentElement.style.colorScheme=e.target.checked?'dark':'light';
+};
 
-    const scrStart=document.getElementById('scrStart');
-    const scrStop=document.getElementById('scrStop');
-    const scrDownload=document.getElementById('scrDownload');
-    const scrPrev=document.getElementById('scrPrev');
-
-    const vStart=document.getElementById('vStart');
-    const vStop=document.getElementById('vStop');
-    const vDownload=document.getElementById('vDownload');
-    const vPlayer=document.getElementById('vPlayer');
-
-    const snapPrev=document.getElementById('snapPrev');
-    const snapCanvas=document.getElementById('snapCanvas');
-    const snapPreviewBtn=document.getElementById('snapPreview');
-    const takeSnapBtn=document.getElementById('takeSnap');
-    const snapDownload=document.getElementById('snapDownload');
-
-    let previewStream=null, displayStream=null, mixedStream=null, rec=null, chunks=[];
-
-    async function ensurePerm(){
-      try{ const t=await navigator.mediaDevices.getUserMedia({audio:true, video:true}); t.getTracks().forEach(x=>x.stop()); }catch(e){ }
-    }
-    async function listDevices(){
-      await ensurePerm();
-      const ds=await navigator.mediaDevices.enumerateDevices();
-      const cams=ds.filter(d=>d.kind==='videoinput');
-      const mics=ds.filter(d=>d.kind==='audioinput');
-      camSel.innerHTML=cams.map(d=>`<option value="${d.deviceId}">${d.label||'Camera'}</option>`).join('');
-      micSel.innerHTML=mics.map(d=>`<option value="${d.deviceId}">${d.label||'Microphone'}</option>`).join('');
-      devList.textContent=ds.map(d=>`${d.kind}\t${d.label||'(no label)'}\n${d.deviceId}`).join('\n\n');
-    }
-
-    async function startCamPreview(){
-      stopAll();
-      const cam=camSel.value||undefined; const mic=micSel.value||undefined;
-      previewStream=await navigator.mediaDevices.getUserMedia({video:cam?{deviceId:{exact:cam}}:true, audio:mic?{deviceId:{exact:mic}}:true});
-      camPrev.srcObject=previewStream;
-      const s=previewStream.getVideoTracks()[0]?.getSettings?.()||{};
-      camInfo.textContent=`${s.width||'—'}x${s.height||'—'} @ ${s.frameRate||'—'}fps`;
-    }
-
-    async function getMixed(){
-      if(!previewStream) await startCamPreview();
-      const tracks=[];
-      if(previewStream){ const v=previewStream.getVideoTracks()[0]; if(v) tracks.push(v); }
-      const ac=new (window.AudioContext||window.webkitAudioContext)();
-      const dest=ac.createMediaStreamDestination();
-      if(previewStream && previewStream.getAudioTracks().length){ ac.createMediaStreamSource(previewStream).connect(dest); }
-      if(includeSystem.checked){ try{ displayStream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:true}); ac.createMediaStreamSource(displayStream).connect(dest); }catch(e){ alert('Desktop capture blocked or failed.'); } }
-      dest.stream.getAudioTracks().forEach(t=>tracks.push(t));
-      mixedStream=new MediaStream(tracks); return mixedStream;
-    }
-
-    async function startRec(){
-      camDownload.style.display='none'; chunks=[];
-      rec=new MediaRecorder(await getMixed(), {mimeType:'video/webm;codecs=vp9,opus'});
-      rec.ondataavailable=e=>{ if(e.data&&e.data.size) chunks.push(e.data); };
-      rec.onstop=()=>{ const blob=new Blob(chunks,{type:'video/webm'}); const url=URL.createObjectURL(blob); camDownload.href=url; camDownload.style.display='inline-block'; };
-      rec.start(); camRecord.disabled=true; camStop.disabled=false;
-    }
-    function stopRec(){ if(rec && rec.state!=='inactive'){ rec.stop(); } camStop.disabled=true; camRecord.disabled=false; if(displayStream){ displayStream.getTracks().forEach(t=>t.stop()); displayStream=null; } }
-
-    function stopAll(){ [previewStream, displayStream, mixedStream].forEach(s=>{ if(s){ s.getTracks().forEach(t=>t.stop()); } }); previewStream=displayStream=mixedStream=null; camPrev.srcObject=null; }
-
-    // Screen recorder only
-    let srec=null, schunks=[];
-    async function scrStartRec(){
-      schunks=[]; scrDownload.style.display='none';
-      const s=await navigator.mediaDevices.getDisplayMedia({video:true,audio:true});
-      scrPrev.srcObject=s;
-      srec=new MediaRecorder(s, {mimeType:'video/webm;codecs=vp9,opus'});
-      srec.ondataavailable=e=>{ if(e.data&&e.data.size) schunks.push(e.data); };
-      srec.onstop=()=>{ const blob=new Blob(schunks,{type:'video/webm'}); const url=URL.createObjectURL(blob); scrDownload.href=url; scrDownload.style.display='inline-block'; };
-      srec.start(); scrStart.disabled=true; scrStop.disabled=false;
-    }
-    function scrStopRec(){ if(srec&&srec.state!=='inactive'){ srec.stop(); } scrStop.disabled=true; scrStart.disabled=false; const s=scrPrev.srcObject; if(s){ s.getTracks().forEach(t=>t.stop()); scrPrev.srcObject=null; } }
-
-    // Voice only
-    let vrec=null, vchunks=[];
-    async function vStartRec(){ vchunks=[]; vDownload.style.display='none'; const mic=micSel.value||undefined; const a=await navigator.mediaDevices.getUserMedia({audio:mic?{deviceId:{exact:mic}}:true}); vrec=new MediaRecorder(a,{mimeType:'audio/webm'}); vrec.ondataavailable=e=>{ if(e.data&&e.data.size) vchunks.push(e.data); }; vrec.onstop=()=>{ const b=new Blob(vchunks,{type:'audio/webm'}); const u=URL.createObjectURL(b); vDownload.href=u; vDownload.style.display='inline-block'; vPlayer.src=u; }; vrec.start(); vStart.disabled=true; vStop.disabled=false; }
-    function vStopRec(){ if(vrec&&vrec.state!=='inactive'){ vrec.stop(); } vStop.disabled=true; vStart.disabled=false; }
-
-    // Snapshot
-    async function snapStart(){ const s=await navigator.mediaDevices.getUserMedia({video:true}); snapPrev.srcObject=s; takeSnapBtn.disabled=false; }
-    function takeSnap(){ const v=snapPrev; const c=snapCanvas; const ctx=c.getContext('2d'); const r=v.videoWidth/v.videoHeight; c.width=1280; c.height=Math.round(1280/r); ctx.drawImage(v,0,0,c.width,c.height); snapDownload.href=c.toDataURL('image/png'); snapDownload.style.display='inline-block'; }
-
-    // File tools
-    document.getElementById('imgInput').addEventListener('change', async (e)=>{ const f=e.target.files?.[0]; if(!f) return; const b=await f.arrayBuffer(); const base64=btoa(String.fromCharCode(...new Uint8Array(b))); document.getElementById('b64Out').value=`data:${f.type};base64,${base64}`; });
-    document.getElementById('copyB64').onclick=()=>{ const t=document.getElementById('b64Out'); t.select(); document.execCommand('copy'); };
-    document.getElementById('clearB64').onclick=()=>{ document.getElementById('b64Out').value=''; };
-
-    // Text tools
-    document.getElementById('wcBtn').onclick=()=>{ const s=document.getElementById('txtIn').value; const words=(s.trim().match(/\S+/g)||[]).length; const chars=s.length; document.getElementById('wcInfo').textContent=`Words: ${words} • Chars: ${chars}`; };
-
-    // Clipboard
-    document.getElementById('clipRead').onclick=async()=>{ try{ const t=await navigator.clipboard.readText(); document.getElementById('clipOut').textContent=t||'(empty)'; }catch(e){ document.getElementById('clipOut').textContent='Clipboard read blocked by browser'; } };
-    document.getElementById('clipWrite').onclick=async()=>{ try{ await navigator.clipboard.writeText('Flu Tools clipboard test'); document.getElementById('clipOut').textContent='Wrote sample text to clipboard'; }catch(e){ document.getElementById('clipOut').textContent='Clipboard write blocked by browser'; } };
-
-    // Network
-    async function fetchAndShow(method){
-      const url=document.getElementById('urlIn').value; const out=document.getElementById('netOut'); out.textContent='Loading…';
-      try{
-        const res=await fetch(url, {method});
-        const headers=[...res.headers.entries()].map(([k,v])=>k+': '+v).join('\n');
-        let body='';
-        if(method!=="HEAD"){ body=await res.text(); body=body.slice(0,1500)+(body.length>1500?'\n…(truncated)':''); }
-        out.textContent=`Status: ${res.status}\n${headers}\n\n${body}`;
-      }catch(e){ out.textContent='Fetch error: '+e; }
-    }
-
-    // Settings
-    document.getElementById('autoTheme').onchange=(e)=>{ document.documentElement.style.colorScheme = e.target.checked? 'light dark' : 'dark light'; };
-
-    // Wire up
-    camRefresh.onclick=listDevices; camPreview.onclick=startCamPreview; camRecord.onclick=startRec; camStop.onclick=stopRec; window.addEventListener('beforeunload', stopAll);
-    scrStart.onclick=scrStartRec; scrStop.onclick=scrStopRec;
-    vStart.onclick=vStartRec; vStop.onclick=vStopRec;
-    snapPreviewBtn.onclick=snapStart; takeSnapBtn.onclick=takeSnap;
-    document.getElementById('httpGet').onclick=()=>fetchAndShow('GET');
-    document.getElementById('httpHead').onclick=()=>fetchAndShow('HEAD');
-
-    // Boot
-    listDevices(); setRoute();
-  </script>
+// INITIALIZATION
+refreshCam(); setRoute();
+</script>
 </body>
 </html>
