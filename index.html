@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Valkz Tools – Webcam & Voice Recorder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg-start:#3b1e86; --bg-end:#3ec2ff; --card:#1e1b2e; --muted:#9aa1b2; --accent:#7c5cff;
+      --surface:#221e36; --text:#eef1f7; --ok:#20c997; --warn:#ffb020; --danger:#ff5d6c;
+      --shadow: 0 10px 30px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.02);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: 'Outfit', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Noto Sans", Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color:var(--text);
+      background: radial-gradient(1200px 700px at 20% -10%, rgba(255,255,255,.08), transparent 50%),
+                  radial-gradient(1000px 600px at 110% 20%, rgba(255,255,255,.06), transparent 50%),
+                  linear-gradient(130deg, var(--bg-start), var(--bg-end));
+      background-attachment: fixed;
+      display:grid; grid-template-columns: 240px 1fr;
+    }
+    aside{
+      background: rgba(0,0,0,.25);
+      backdrop-filter: blur(8px);
+      border-right: 1px solid rgba(255,255,255,.08);
+      padding: 22px 14px; position:sticky; top:0; height:100vh;
+    }
+    .brand{font-weight:800; font-size:22px; letter-spacing:.5px; margin:8px 10px 18px}
+    nav a{
+      display:flex; align-items:center; gap:10px;
+      text-decoration:none; color:var(--text); opacity:.88; font-weight:600;
+      padding:12px 14px; margin:8px 6px; border-radius:12px; transition:.2s ease;
+    }
+    nav a:hover{background: rgba(255,255,255,.08);}
+    nav a.active{background: linear-gradient(90deg, rgba(124,92,255,.25), rgba(255,255,255,.06)); outline:1px solid rgba(124,92,255,.35)}
+
+    main{padding: 28px 32px;}
+    .title{font-size:36px; font-weight:800; margin:6px 0 22px; text-shadow: 0 6px 22px rgba(0,0,0,.25)}
+
+    .grid{display:grid; grid-template-columns: 1.1fr .9fr; gap:22px; align-items:start}
+    .card{background: rgba(20,16,36,.75); border:1px solid rgba(255,255,255,.08); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px}
+    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+    label{font-size:13px; color:var(--muted); display:block; margin-bottom:6px}
+    select, input[type="text"], .btn{
+      background: var(--surface); color:var(--text); border:1px solid rgba(255,255,255,.08);
+      border-radius: 12px; padding:12px 12px; font: inherit; outline:none; min-width: 160px;
+    }
+    select{width:100%}
+    .btn{cursor:pointer; user-select:none; white-space:nowrap}
+    .btn.primary{background: linear-gradient(180deg, #8f7cff, #6a4dff); border-color: rgba(124,92,255,.55)}
+    .btn.ghost{background:transparent}
+    .btn.success{background: linear-gradient(180deg, #20c997, #16a085); border-color: rgba(32,201,151,.6)}
+    .btn.warn{background: linear-gradient(180deg, #ffb020, #ff8c00)}
+    .btn.danger{background: linear-gradient(180deg, #ff6b81, #ff4757)}
+
+    .preview{
+      width:100%; aspect-ratio: 16/9; background:#0c0b12; border-radius:14px; overflow:hidden;
+      display:grid; place-items:center; border:1px solid rgba(255,255,255,.07)
+    }
+    video{width:100%; height:100%; object-fit:cover}
+    .muted{font-size:12px; color:var(--muted)}
+
+    .devices{height:180px; overflow:auto; background:var(--surface); border:1px solid rgba(255,255,255,.08); padding:10px; border-radius:12px; font-size:12px}
+
+    .split{display:grid; grid-template-columns: 1fr 1fr; gap:16px}
+
+    .footer{margin-top:14px; font-size:12px; color:var(--muted)}
+    .pill{display:inline-block; padding:4px 8px; border-radius:999px; background:rgba(124,92,255,.2); border:1px solid rgba(124,92,255,.4)}
+
+    @media (max-width: 980px){ body{grid-template-columns:1fr} aside{position:static; height:auto} .grid{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+  <aside>
+    <div class="brand">Valkz Tools</div>
+    <nav>
+      <a href="#login">Login</a>
+      <a href="#webcam" class="active">Webcam</a>
+      <a href="#voice">Voice Recorder</a>
+      <a href="#discord">Discord</a>
+      <a href="#roblox">Roblox</a>
+    </nav>
+    <div class="footer">Hosted on <span class="pill">GitHub Pages</span></div>
+  </aside>
+
+  <main>
+    <h1 class="title" id="section-title">Webcam Recorder</h1>
+
+    <section id="webcam-section" class="grid">
+      <div class="card">
+        <div class="split">
+          <div>
+            <label>Camera</label>
+            <select id="cameraSelect"></select>
+          </div>
+          <div>
+            <label>Microphone</label>
+            <select id="micSelect"></select>
+          </div>
+        </div>
+
+        <div class="row" style="margin:14px 0 8px">
+          <button id="refreshBtn" class="btn ghost">Refresh Devices</button>
+          <button id="previewBtn" class="btn">Start Preview</button>
+          <button id="recordBtn" class="btn primary">Start Recording</button>
+          <button id="stopBtn" class="btn danger" disabled>Stop Recording</button>
+          <a id="downloadLink" class="btn success" style="display:none" download="recording.webm">Download</a>
+        </div>
+
+        <label style="margin-top:6px"><input type="checkbox" id="sysAudioChk" /> Include Desktop Audio (screen capture)</label>
+
+        <div style="margin-top:12px">
+          <label>Detected devices</label>
+          <pre id="devicesList" class="devices">Scanning…</pre>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="preview">
+          <video id="preview" autoplay playsinline muted></video>
+        </div>
+        <div class="muted" id="previewInfo" style="margin-top:8px">Preview: —</div>
+      </div>
+    </section>
+
+    <section id="voice-section" class="card" style="display:none">
+      <h2>Voice Recorder</h2>
+      <p class="muted">A lightweight voice-only recorder. Uses the selected microphone above.</p>
+      <div class="row" style="margin:12px 0">
+        <button id="voiceStart" class="btn primary">Start Voice Recording</button>
+        <button id="voiceStop" class="btn danger" disabled>Stop</button>
+        <a id="voiceDownload" class="btn success" style="display:none" download="voice.webm">Download</a>
+      </div>
+      <audio id="voicePlayer" controls style="width:100%"></audio>
+    </section>
+  </main>
+
+  <script>
+    // --- Simple router for sidebar ---
+    const links = document.querySelectorAll('nav a');
+    const sections = { webcam: document.getElementById('webcam-section'), voice: document.getElementById('voice-section') };
+    function setRoute(){
+      const hash = (location.hash || '#webcam').replace('#','');
+      links.forEach(a=>a.classList.toggle('active', a.getAttribute('href') === '#'+hash));
+      document.getElementById('section-title').textContent = hash === 'voice' ? 'Voice Recorder' : 'Webcam Recorder';
+      sections.webcam.style.display = hash === 'webcam' ? 'grid' : 'none';
+      sections.voice.style.display = hash === 'voice' ? 'block' : 'none';
+    }
+    addEventListener('hashchange', setRoute); setRoute();
+
+    // --- Elements ---
+    const cameraSelect = document.getElementById('cameraSelect');
+    const micSelect = document.getElementById('micSelect');
+    const devicesList = document.getElementById('devicesList');
+    const preview = document.getElementById('preview');
+    const previewInfo = document.getElementById('previewInfo');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const previewBtn = document.getElementById('previewBtn');
+    const recordBtn = document.getElementById('recordBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const sysAudioChk = document.getElementById('sysAudioChk');
+    const downloadLink = document.getElementById('downloadLink');
+
+    const voiceStart = document.getElementById('voiceStart');
+    const voiceStop = document.getElementById('voiceStop');
+    const voiceDownload = document.getElementById('voiceDownload');
+    const voicePlayer = document.getElementById('voicePlayer');
+
+    let previewStream = null;       // webcam + mic
+    let displayStream = null;       // optional desktop audio
+    let mixedStream = null;         // stream sent to MediaRecorder
+    let mediaRecorder = null;       // for video recording
+    let voiceRecorder = null;       // for voice-only recording
+    let chunks = [];
+
+    async function ensurePermission(){
+      // First call getUserMedia quickly to get labels for enumerateDevices
+      try{
+        const temp = await navigator.mediaDevices.getUserMedia({audio:true, video:true});
+        temp.getTracks().forEach(t=>t.stop());
+      }catch(err){/* ignore */}
+    }
+
+    async function listDevices(){
+      await ensurePermission();
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const cams = devices.filter(d=>d.kind==='videoinput');
+      const mics = devices.filter(d=>d.kind==='audioinput');
+
+      cameraSelect.innerHTML = cams.map(d=>`<option value="${d.deviceId}">${escapeHtml(d.label || 'Camera')}</option>`).join('');
+      micSelect.innerHTML = mics.map(d=>`<option value="${d.deviceId}">${escapeHtml(d.label || 'Microphone')}</option>`).join('');
+
+      devicesList.textContent = devices.map(d=>`${d.kind}\t${d.label || '(label pending)'}\nid: ${d.deviceId}`).join('\n\n');
+    }
+
+    function escapeHtml(str){ return str.replace(/[&<>"']/g, s=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[s])); }
+
+    async function startPreview(){
+      stopAll();
+      const camId = cameraSelect.value || undefined;
+      const micId = micSelect.value || undefined;
+
+      previewStream = await navigator.mediaDevices.getUserMedia({
+        video: camId ? {deviceId: {exact: camId}} : true,
+        audio: micId ? {deviceId: {exact: micId}} : true
+      });
+
+      preview.srcObject = previewStream;
+      const vTrack = previewStream.getVideoTracks()[0];
+      const s = vTrack.getSettings();
+      previewInfo.textContent = `Preview: ${s.width || '—'}x${s.height || '—'} @ ${s.frameRate || '—'}fps`;
+    }
+
+    async function getMixedStream(){
+      if(!previewStream) await startPreview();
+
+      if(sysAudioChk.checked){
+        try{
+          // Ask user to pick a screen/window with audio
+          displayStream = await navigator.mediaDevices.getDisplayMedia({ video:true, audio:true });
+        }catch(err){
+          alert('Screen capture was not allowed or failed. Recording without desktop audio.');
+        }
+      }
+
+      // Build the final tracks list
+      const tracks = [];
+      // Always include the camera video (prefer webcam over display video)
+      if(previewStream){
+        const v = previewStream.getVideoTracks()[0];
+        if(v) tracks.push(v);
+      }
+
+      // Mix audio: microphone + (optional) system audio
+      const ac = new (window.AudioContext || window.webkitAudioContext)();
+      const dest = ac.createMediaStreamDestination();
+
+      if(previewStream && previewStream.getAudioTracks().length){
+        const src1 = ac.createMediaStreamSource(previewStream);
+        src1.connect(dest);
+      }
+      if(displayStream && displayStream.getAudioTracks().length){
+        const src2 = ac.createMediaStreamSource(displayStream);
+        src2.connect(dest);
+      }
+
+      dest.stream.getAudioTracks().forEach(t=>tracks.push(t));
+
+      mixedStream = new MediaStream(tracks);
+      return mixedStream;
+    }
+
+    async function startRecording(){
+      downloadLink.style.display = 'none';
+      chunks = [];
+      const stream = await getMixedStream();
+      mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9,opus' });
+      mediaRecorder.ondataavailable = e=>{ if(e.data && e.data.size) chunks.push(e.data); };
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunks, {type: 'video/webm'});
+        const url = URL.createObjectURL(blob);
+        downloadLink.href = url; downloadLink.style.display='inline-block';
+      };
+      mediaRecorder.start();
+      recordBtn.disabled = true; stopBtn.disabled = false;
+    }
+
+    function stopRecording(){
+      if(mediaRecorder && mediaRecorder.state !== 'inactive'){ mediaRecorder.stop(); }
+      stopBtn.disabled = true; recordBtn.disabled = false;
+      if(displayStream){ displayStream.getTracks().forEach(t=>t.stop()); displayStream=null; }
+    }
+
+    function stopAll(){
+      if(previewStream){ previewStream.getTracks().forEach(t=>t.stop()); previewStream=null; }
+      if(displayStream){ displayStream.getTracks().forEach(t=>t.stop()); displayStream=null; }
+      if(mixedStream){ mixedStream.getTracks().forEach(t=>t.stop()); mixedStream=null; }
+      preview.srcObject = null;
+    }
+
+    // Voice-only recording
+    async function startVoice(){
+      const micId = micSelect.value || undefined;
+      const astream = await navigator.mediaDevices.getUserMedia({audio: micId? {deviceId:{exact: micId}}: true});
+      let vchunks = [];
+      voiceRecorder = new MediaRecorder(astream, {mimeType:'audio/webm'});
+      voiceRecorder.ondataavailable = e=>{ if(e.data && e.data.size) vchunks.push(e.data); };
+      voiceRecorder.onstop = ()=>{
+        const blob = new Blob(vchunks, {type:'audio/webm'});
+        const url = URL.createObjectURL(blob);
+        voiceDownload.href = url; voiceDownload.style.display='inline-block';
+        voicePlayer.src = url;
+      };
+      voiceRecorder.start();
+      voiceStart.disabled = true; voiceStop.disabled = false;
+    }
+    function stopVoice(){ if(voiceRecorder && voiceRecorder.state!=='inactive'){ voiceRecorder.stop(); voiceStop.disabled=true; voiceStart.disabled=false; } }
+
+    // --- Wire up ---
+    refreshBtn.onclick = listDevices;
+    previewBtn.onclick = startPreview;
+    recordBtn.onclick = startRecording;
+    stopBtn.onclick = stopRecording;
+
+    voiceStart.onclick = startVoice;
+    voiceStop.onclick = stopVoice;
+
+    listDevices();
+  </script>
+</body>
+</html>
