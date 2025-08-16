@@ -3,96 +3,116 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Flu Tools</title>
+<title>Flu</title>
 <style>
   body {
     margin: 0;
-    padding: 0;
     overflow: hidden;
-    background: url('https://i.imgur.com/5v4hF6F.jpg') no-repeat center center fixed;
-    background-size: cover;
-    font-family: 'Arial', sans-serif;
-    cursor: url('https://i.imgur.com/W8X6l2G.png'), auto; /* custom cursor */
+    background-color: #1a1a1a;
+    cursor: crosshair;
   }
-
-  /* Neon Title */
-  #title {
+  #score {
     position: absolute;
-    top: 50px;
-    width: 100%;
-    text-align: center;
-    font-size: 64px;
-    color: #ff00ff;
-    text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff, 0 0 30px #ff00ff;
-    animation: glow 2s infinite alternate;
-  }
-
-  @keyframes glow {
-    0% { text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff; }
-    50% { text-shadow: 0 0 20px #00ffff, 0 0 30px #00ffff; }
-    100% { text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff; }
-  }
-
-  /* Buttons */
-  .neon-button {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 20px 50px;
-    font-size: 28px;
-    border: none;
-    border-radius: 10px;
-    background-color: purple;
+    top: 10px;
+    left: 10px;
     color: white;
-    cursor: pointer;
-    transition: 0.3s;
-    text-transform: uppercase;
-    margin-top: 150px;
-  }
-
-  .neon-button:hover {
-    background-color: #ff00ff;
-    transform: translateX(-50%) scale(1.1);
-  }
-
-  /* Optional cursor trail */
-  .trail {
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    pointer-events: none;
-    opacity: 0.7;
+    font-family: Arial, sans-serif;
+    font-size: 24px;
   }
 </style>
 </head>
 <body>
-
-<div id="title">flu</div>
-<button class="neon-button">Enter</button>
-
-<audio id="bgMusic" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" loop></audio>
+<canvas id="gameCanvas" width="800" height="600"></canvas>
+<div id="score">Score: 0</div>
 
 <script>
-  const button = document.querySelector('.neon-button');
-  const music = document.getElementById('bgMusic');
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
 
-  button.addEventListener('click', () => {
-    music.play();
-    alert("Welcome to Flu Tools!");
-  });
+const player = { x: 400, y: 300, size: 20, color: 'blue', speed: 5 };
+const bullets = [];
+const enemies = [];
+let score = 0;
 
-  // Cursor trail effect
-  document.addEventListener('mousemove', e => {
-    const trail = document.createElement('div');
-    trail.classList.add('trail');
-    trail.style.left = e.pageX + 'px';
-    trail.style.top = e.pageY + 'px';
-    trail.style.backgroundColor = '#' + Math.floor(Math.random()*16777215).toString(16);
-    document.body.appendChild(trail);
-    setTimeout(() => trail.remove(), 500);
-  });
+// Movement
+const keys = {};
+window.addEventListener('keydown', e => keys[e.key] = true);
+window.addEventListener('keyup', e => keys[e.key] = false);
+
+// Shoot
+window.addEventListener('click', e => {
+  const angle = Math.atan2(e.clientY - player.y, e.clientX - player.x);
+  bullets.push({ x: player.x, y: player.y, dx: Math.cos(angle)*10, dy: Math.sin(angle)*10 });
+});
+
+// Spawn enemies
+function spawnEnemy() {
+  const x = Math.random() < 0.5 ? 0 : canvas.width;
+  const y = Math.random() * canvas.height;
+  enemies.push({ x, y, size: 20, color: 'red', speed: 2 });
+}
+setInterval(spawnEnemy, 2000);
+
+function update() {
+  // Player movement
+  if(keys['w'] && player.y > 0) player.y -= player.speed;
+  if(keys['s'] && player.y < canvas.height) player.y += player.speed;
+  if(keys['a'] && player.x > 0) player.x -= player.speed;
+  if(keys['d'] && player.x < canvas.width) player.x += player.speed;
+
+  // Update bullets
+  for(let i = bullets.length - 1; i >= 0; i--){
+    const b = bullets[i];
+    b.x += b.dx;
+    b.y += b.dy;
+    if(b.x < 0 || b.x > canvas.width || b.y < 0 || b.y > canvas.height){
+      bullets.splice(i,1);
+    }
+  }
+
+  // Update enemies
+  for(let i = enemies.length - 1; i >= 0; i--){
+    const e = enemies[i];
+    const angle = Math.atan2(player.y - e.y, player.x - e.x);
+    e.x += Math.cos(angle) * e.speed;
+    e.y += Math.sin(angle) * e.speed;
+
+    // Check collision with bullets
+    for(let j = bullets.length - 1; j >= 0; j--){
+      const b = bullets[j];
+      const dist = Math.hypot(e.x - b.x, e.y - b.y);
+      if(dist < e.size/2 + 2.5){
+        enemies.splice(i,1);
+        bullets.splice(j,1);
+        score += 1;
+        break;
+      }
+    }
+  }
+
+  draw();
+  requestAnimationFrame(update);
+}
+
+function draw() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  // Draw player
+  ctx.fillStyle = player.color;
+  ctx.fillRect(player.x - player.size/2, player.y - player.size/2, player.size, player.size);
+
+  // Draw bullets
+  ctx.fillStyle = 'yellow';
+  bullets.forEach(b => ctx.fillRect(b.x - 2.5, b.y - 2.5, 5, 5));
+
+  // Draw enemies
+  enemies.forEach(e => ctx.fillRect(e.x - e.size/2, e.y - e.size/2, e.size, e.size));
+
+  // Update score
+  document.getElementById('score').innerText = "Score: " + score;
+}
+
+update();
 </script>
-
 </body>
 </html>
