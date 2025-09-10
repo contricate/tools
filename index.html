@@ -206,13 +206,13 @@
   });
 
   // Simple floating animation for header text
-  const header = document.querySelector('header h1');
+  const headerText = document.querySelector('header h1');
   let direction = 1;
   let position = 0;
   setInterval(() => {
     position += 0.2 * direction;
     if (position > 5 || position < -5) direction *= -1;
-    header.style.transform = `translateY(${position}px)`;
+    headerText.style.transform = `translateY(${position}px)`;
   }, 30);
 
   // Card hover glow (extra effect)
