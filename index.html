@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Your Custom Site</title>
+<title>Flu</title>
 <style>
   /* === Base Styles === */
   body {
@@ -36,7 +36,7 @@
   }
 
   header h1 {
-    font-size: 4rem;
+    font-size: 5rem;
     margin: 0;
     color: #00ff99;
     animation: glow 1.5s infinite alternate;
@@ -110,6 +110,18 @@
     color: #0d0d0d;
   }
 
+  /* === Spotify Embed === */
+  .spotify-player {
+    display: flex;
+    justify-content: center;
+    margin-top: 40px;
+  }
+
+  iframe {
+    border-radius: 12px;
+    border: none;
+  }
+
   /* === Footer === */
   footer {
     text-align: center;
@@ -126,7 +138,12 @@
     }
 
     header h1 {
-      font-size: 3rem;
+      font-size: 3.5rem;
+    }
+
+    iframe {
+      width: 100%;
+      height: 80px;
     }
   }
 </style>
@@ -134,7 +151,7 @@
 <body>
 
 <header>
-  <h1>Your Site</h1>
+  <h1>Flu</h1>
   <p>Modern, sleek, and dark-themed GitHub Pages site</p>
 </header>
 
@@ -160,22 +177,51 @@
 </section>
 
 <section>
+  <h2>Listen</h2>
+  <div class="spotify-player">
+    <iframe src="https://open.spotify.com/embed/track/0JiVRyTJcJnmlwCZ854K4p" 
+      width="300" height="80" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture">
+    </iframe>
+  </div>
+</section>
+
+<section>
   <h2>Contact</h2>
   <p style="text-align:center;">Reach me at: <a href="mailto:youremail@example.com">youremail@example.com</a></p>
 </section>
 
 <footer>
-  &copy; 2025 Your Name. All rights reserved.
+  &copy; 2025 Flu. All rights reserved.
 </footer>
 
 <script>
-  // Example: Add smooth scrolling to all links
+  // Smooth scroll for anchor links
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function(e) {
       e.preventDefault();
       document.querySelector(this.getAttribute('href')).scrollIntoView({
         behavior: 'smooth'
       });
+    });
+  });
+
+  // Simple floating animation for header text
+  const header = document.querySelector('header h1');
+  let direction = 1;
+  let position = 0;
+  setInterval(() => {
+    position += 0.2 * direction;
+    if (position > 5 || position < -5) direction *= -1;
+    header.style.transform = `translateY(${position}px)`;
+  }, 30);
+
+  // Card hover glow (extra effect)
+  document.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('mouseenter', () => {
+      card.style.boxShadow = '0 0 30px #00ff99';
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.boxShadow = '0 0 0px #00ff99';
     });
   });
 </script>
