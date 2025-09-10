@@ -1,182 +1,182 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Flu</title>
-<style>
-  /* === Base Styles === */
-  body {
-    margin: 0;
-    font-family: 'Segoe UI', sans-serif;
-    background-color: #0d0d0d;
-    color: #fff;
-    overflow-x: hidden;
-  }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flu</title>
+  <style>
+    /* === Base Styles === */
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #0d0d0d;
+      color: #fff;
+      overflow-x: hidden;
+    }
 
-  a {
-    color: #00ff99;
-    text-decoration: none;
-    transition: 0.3s;
-  }
+    a {
+      color: #00ff99;
+      text-decoration: none;
+      transition: 0.3s;
+    }
 
-  a:hover {
-    color: #00b3ff;
-  }
+    a:hover {
+      color: #00b3ff;
+    }
 
-  /* === Header Section === */
-  header {
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    background: linear-gradient(135deg, #0d0d0d, #111111);
-  }
-
-  header h1 {
-    font-size: 5rem;
-    margin: 0;
-    color: #00ff99;
-    animation: glow 1.5s infinite alternate;
-  }
-
-  header p {
-    font-size: 1.5rem;
-    color: #aaa;
-    margin-top: 20px;
-  }
-
-  @keyframes glow {
-    from { text-shadow: 0 0 5px #00ff99, 0 0 10px #00ff99; }
-    to { text-shadow: 0 0 20px #00ff99, 0 0 30px #00b3ff; }
-  }
-
-  /* === Sections === */
-  section {
-    padding: 80px 20px;
-    max-width: 1000px;
-    margin: auto;
-  }
-
-  h2 {
-    font-size: 2.5rem;
-    color: #00ff99;
-    margin-bottom: 40px;
-    text-align: center;
-  }
-
-  .cards {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 30px;
-    justify-content: center;
-  }
-
-  .card {
-    background-color: #111111;
-    border: 1px solid #00ff99;
-    border-radius: 15px;
-    padding: 30px;
-    width: 250px;
-    transition: 0.3s;
-  }
-
-  .card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 0 20px #00ff99;
-  }
-
-  .card h3 {
-    margin-top: 0;
-    color: #00b3ff;
-  }
-
-  /* === Buttons === */
-  .btn {
-    display: inline-block;
-    padding: 10px 25px;
-    margin-top: 20px;
-    border: 2px solid #00ff99;
-    border-radius: 50px;
-    color: #00ff99;
-    font-weight: bold;
-    transition: 0.3s;
-  }
-
-  .btn:hover {
-    background-color: #00ff99;
-    color: #0d0d0d;
-  }
-
-  /* === Footer === */
-  footer {
-    text-align: center;
-    padding: 40px 20px;
-    background-color: #111111;
-    color: #777;
-  }
-
-  /* === Fixed Spotify Player === */
-  .spotify-fixed {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    border: 2px solid #00ff99;
-    border-radius: 12px;
-    overflow: hidden;
-    width: 300px;
-    height: 80px;
-    box-shadow: 0 0 20px #00ff99;
-    z-index: 9999;
-    background-color: #111111;
-  }
-
-  .spotify-fixed iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-  }
-
-  /* === Music Toggle Button === */
-  #music-toggle {
-    position: fixed;
-    bottom: 120px;
-    right: 20px;
-    padding: 10px 20px;
-    background:#00ff99;
-    border:none;
-    color:#0d0d0d;
-    border-radius:8px;
-    cursor:pointer;
-    z-index:10000;
-    font-weight:bold;
-  }
-
-  /* === Responsive === */
-  @media (max-width: 768px) {
-    .cards {
+    /* === Header Section === */
+    header {
+      height: 100vh;
+      display: flex;
       flex-direction: column;
+      justify-content: center;
       align-items: center;
+      text-align: center;
+      background: linear-gradient(135deg, #0d0d0d, #111111);
     }
 
     header h1 {
-      font-size: 3.5rem;
+      font-size: 5rem;
+      margin: 0;
+      color: #00ff99;
+      animation: glow 1.5s infinite alternate;
     }
 
+    header p {
+      font-size: 1.5rem;
+      color: #aaa;
+      margin-top: 20px;
+    }
+
+    @keyframes glow {
+      from { text-shadow: 0 0 5px #00ff99, 0 0 10px #00ff99; }
+      to { text-shadow: 0 0 20px #00ff99, 0 0 30px #00b3ff; }
+    }
+
+    /* === Sections === */
+    section {
+      padding: 80px 20px;
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    h2 {
+      font-size: 2.5rem;
+      color: #00ff99;
+      margin-bottom: 40px;
+      text-align: center;
+    }
+
+    .cards {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+      justify-content: center;
+    }
+
+    .card {
+      background-color: #111111;
+      border: 1px solid #00ff99;
+      border-radius: 15px;
+      padding: 30px;
+      width: 250px;
+      transition: 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 0 20px #00ff99;
+    }
+
+    .card h3 {
+      margin-top: 0;
+      color: #00b3ff;
+    }
+
+    /* === Buttons === */
+    .btn {
+      display: inline-block;
+      padding: 10px 25px;
+      margin-top: 20px;
+      border: 2px solid #00ff99;
+      border-radius: 50px;
+      color: #00ff99;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    .btn:hover {
+      background-color: #00ff99;
+      color: #0d0d0d;
+    }
+
+    /* === Footer === */
+    footer {
+      text-align: center;
+      padding: 40px 20px;
+      background-color: #111111;
+      color: #777;
+    }
+
+    /* === Fixed Spotify Player === */
     .spotify-fixed {
-      width: 90%;
-      left: 5%;
-      right: 5%;
+      position: fixed;
       bottom: 20px;
+      right: 20px;
+      border: 2px solid #00ff99;
+      border-radius: 12px;
+      overflow: hidden;
+      width: 300px;
+      height: 80px;
+      box-shadow: 0 0 20px #00ff99;
+      z-index: 9999;
+      background-color: #111111;
     }
 
-    #music-toggle {
-      right: 5%;
+    .spotify-fixed iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
     }
-  }
-</style>
+
+    /* === Music Toggle Button === */
+    #music-toggle {
+      position: fixed;
+      bottom: 120px;
+      right: 20px;
+      padding: 10px 20px;
+      background:#00ff99;
+      border:none;
+      color:#0d0d0d;
+      border-radius:8px;
+      cursor:pointer;
+      z-index:10000;
+      font-weight:bold;
+    }
+
+    /* === Responsive === */
+    @media (max-width: 768px) {
+      .cards {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      header h1 {
+        font-size: 3.5rem;
+      }
+
+      .spotify-fixed {
+        width: 90%;
+        left: 5%;
+        right: 5%;
+        bottom: 20px;
+      }
+
+      #music-toggle {
+        right: 5%;
+      }
+    }
+  </style>
 </head>
 <body>
 
@@ -217,11 +217,11 @@
 
 <!-- === Fixed Spotify Player === -->
 <div class="spotify-fixed">
-  <iframe src="https://open.spotify.com/embed/track/0JiVRyTJcJnmlwCZ854K4p" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
+  <iframe src="https://open.spotify.com/embed/track/0sqm5qKS1enN0gJPorGzrB" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
 </div>
 
 <!-- === Background Music (use your own MP3 link) === -->
-<audio id="bg-music" src="your-song.mp3" loop></audio>
+<audio id="bg-music" src="https://cdn.discordapp.com/attachments/1404685834367795302/1415149551584677909/SpotiDownloader.com_-_I_like_the_way_u_talk_to_me_-_NESYA.mp3?ex=68c22839&is=68c0d6b9&hm=3c2e05287b92cf5ac2e7f7c19fa2e550270f4922f1e23568487739efbfee8d85&" loop></audio>
 <button id="music-toggle">Play Music</button>
 
 <script>
