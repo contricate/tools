@@ -1,264 +1,199 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Flu</title>
-<style>
-  /* === Base Styles === */
-  body {
-    margin: 0;
-    font-family: 'Segoe UI', sans-serif;
-    background-color: #0d0d0d;
-    color: #fff;
-    overflow-x: hidden;
-    cursor: url('https://media.discordapp.net/attachments/1233881524550635650/1397999018251911251/image.png?ex=68c1ba0b&is=68c0688b&hm=cf6461c5b346e5bc618ccd0f077a444af5f04455000a1d74bfba32f2bb7bc037&=&format=webp&quality=lossless&width=326&height=406') 16 16, auto;
-  }
-
-  a {
-    color: #00ff99;
-    text-decoration: none;
-    transition: 0.3s;
-    cursor: inherit;
-  }
-
-  a:hover {
-    color: #00b3ff;
-  }
-
-  button {
-    cursor: inherit;
-  }
-
-  /* === Header === */
-  header {
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-  }
-
-  header h1 {
-    font-size: 5rem;
-    margin: 0;
-    color: #00ff99;
-    animation: glow 1.5s infinite alternate;
-  }
-
-  @keyframes glow {
-    from { text-shadow: 0 0 5px #00ff99, 0 0 10px #00ff99; }
-    to { text-shadow: 0 0 20px #00ff99, 0 0 30px #00b3ff; }
-  }
-
-  /* === Sections === */
-  section {
-    padding: 80px 20px;
-    max-width: 1000px;
-    margin: auto;
-  }
-
-  h2 {
-    font-size: 2.5rem;
-    color: #00ff99;
-    margin-bottom: 40px;
-    text-align: center;
-  }
-
-  .cards {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 30px;
-    justify-content: center;
-  }
-
-  .card {
-    background-color: #111111;
-    border: 1px solid #00ff99;
-    border-radius: 15px;
-    padding: 30px;
-    width: 250px;
-    transition: 0.3s;
-  }
-
-  .card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 0 20px #00ff99;
-  }
-
-  .card h3 {
-    margin-top: 0;
-    color: #00b3ff;
-  }
-
-  .btn {
-    display: inline-block;
-    padding: 10px 25px;
-    margin-top: 20px;
-    border: 2px solid #00ff99;
-    border-radius: 50px;
-    color: #00ff99;
-    font-weight: bold;
-    transition: 0.3s;
-  }
-
-  .btn:hover {
-    background-color: #00ff99;
-    color: #0d0d0d;
-  }
-
-  /* === Footer === */
-  footer {
-    text-align: center;
-    padding: 40px 20px;
-    background-color: #111111;
-    color: #777;
-  }
-
-  /* === Background Music Button === */
-  #music-toggle {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    padding: 10px 20px;
-    background:#00ff99;
-    border:none;
-    color:#0d0d0d;
-    border-radius:8px;
-    cursor:pointer;
-    z-index:10000;
-    font-weight:bold;
-  }
-
-  /* === Project Page Toggle === */
-  .project-page {
-    display: none;
-    padding: 40px 20px;
-    max-width: 800px;
-    margin: 50px auto;
-    background-color: #111111;
-    border: 1px solid #00ff99;
-    border-radius: 15px;
-  }
-
-  .back-btn {
-    display: inline-block;
-    margin-top: 20px;
-    padding: 10px 20px;
-    background: #00ff99;
-    color: #0d0d0d;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-  }
-
-  /* === Responsive === */
-  @media (max-width: 768px) {
-    .cards {
-      flex-direction: column;
-      align-items: center;
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Remove Text Letters — Mini Tool</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0b0f14; --card:#0f1720; --muted:#96a0b2; --accent:#7c5cff; --glass: rgba(255,255,255,0.03);
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
     }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,#071022 0%, #081426 60%);color:#e6eef6}
+    .wrap{max-width:1100px;margin:40px auto;padding:28px;border-radius:14px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));box-shadow:0 6px 30px rgba(2,6,23,0.6);}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+    h1{font-size:20px;margin:0}
+    p.lead{margin:0;color:var(--muted);font-size:13px}
 
-    header h1 {
-      font-size: 3.5rem;
-    }
+    .grid{display:grid;grid-template-columns:1fr 380px;gap:18px}
+    .card{background:var(--card);padding:16px;border-radius:12px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.02)}
 
-    #music-toggle {
-      left: 5%;
-    }
-  }
-</style>
+    textarea{width:100%;min-height:220px;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:var(--glass);color:inherit;resize:vertical;font-size:14px}
+
+    .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .input{padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+    .btn{padding:10px 12px;border-radius:10px;border:0;cursor:pointer;background:linear-gradient(90deg,var(--accent),#a58bff);color:#081426;font-weight:600}
+    .outline{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+
+    label.switch{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+
+    .small{font-size:13px;color:var(--muted)}
+
+    .options{display:flex;flex-direction:column;gap:10px}
+    .footer{margin-top:12px;color:var(--muted);font-size:13px}
+
+    .result-area{display:flex;flex-direction:column;gap:8px}
+    .row{display:flex;gap:8px}
+
+    @media (max-width:900px){.grid{grid-template-columns:1fr;}.wrap{margin:18px}}
+  </style>
 </head>
 <body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Remove Text Letters</h1>
+        <p class="lead">Paste text on the left, type letters or characters to remove, click <strong>Remove</strong>.</p>
+      </div>
+      <div class="small">Like: onlinetexttools.com/remove-text-letters</div>
+    </header>
 
-<header>
-  <h1>Flu</h1>
-</header>
+    <div class="grid">
+      <div class="card">
+        <label class="small">Input text</label>
+        <textarea id="inputText" placeholder="Paste or type text here..."></textarea>
 
-<section id="projects">
-  <h2>Projects</h2>
-  <div class="cards">
-    <div class="card">
-      <h3>Project 1</h3>
-      <p>A description of your first project.</p>
-      <button class="btn" onclick="openProject(1)">View Project</button>
-    </div>
-    <div class="card">
-      <h3>Project 2</h3>
-      <p>A description of your second project.</p>
-      <button class="btn" onclick="openProject(2)">View Project</button>
-    </div>
-    <div class="card">
-      <h3>Project 3</h3>
-      <p>A description of your third project.</p>
-      <button class="btn" onclick="openProject(3)">View Project</button>
+        <div class="controls">
+          <input id="removeChars" class="input" placeholder="Characters to remove (e.g. abc123 ,.)" />
+          <button id="btnRemove" class="btn">Remove</button>
+          <button id="btnPreview" class="outline">Preview</button>
+          <button id="btnClear" class="outline">Clear</button>
+        </div>
+
+        <div class="options" style="margin-top:12px">
+          <label class="switch"><input type="checkbox" id="caseSensitive"> Case sensitive</label>
+          <label class="switch"><input type="checkbox" id="removeSpaces"> Remove whitespace</label>
+          <label class="switch"><input type="checkbox" id="removeLineBreaks"> Remove line breaks</label>
+          <label class="switch"><input type="checkbox" id="removePunct"> Remove punctuation</label>
+        </div>
+
+        <div class="footer">Tip: separate characters with nothing — e.g. <code>aeiou</code> to strip vowels. Use Preview to try without changing the input.</div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div>
+            <label class="small">Result</label>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button id="btnCopy" class="outline">Copy</button>
+            <button id="btnDownload" class="outline">Download</button>
+          </div>
+        </div>
+
+        <div class="result-area">
+          <textarea id="outputText" readonly placeholder="Result will appear here..."></textarea>
+          <div class="small">Characters removed: <span id="removedCount">0</span></div>
+        </div>
+      </div>
     </div>
   </div>
-</section>
 
-<!-- === Project Pages === -->
-<div id="project-1" class="project-page">
-  <h2>Project 1</h2>
-  <p>Full details about Project 1 go here. You can include images, text, and links.</p>
-  <button class="back-btn" onclick="closeProject(1)">Back</button>
-</div>
+  <script>
+    const input = document.getElementById('inputText');
+    const output = document.getElementById('outputText');
+    const removeInput = document.getElementById('removeChars');
+    const btnRemove = document.getElementById('btnRemove');
+    const btnPreview = document.getElementById('btnPreview');
+    const btnClear = document.getElementById('btnClear');
+    const btnCopy = document.getElementById('btnCopy');
+    const btnDownload = document.getElementById('btnDownload');
+    const caseSensitive = document.getElementById('caseSensitive');
+    const removeSpaces = document.getElementById('removeSpaces');
+    const removeLineBreaks = document.getElementById('removeLineBreaks');
+    const removePunct = document.getElementById('removePunct');
+    const removedCountEl = document.getElementById('removedCount');
 
-<div id="project-2" class="project-page">
-  <h2>Project 2</h2>
-  <p>Full details about Project 2 go here. You can include images, text, and links.</p>
-  <button class="back-btn" onclick="closeProject(2)">Back</button>
-</div>
-
-<div id="project-3" class="project-page">
-  <h2>Project 3</h2>
-  <p>Full details about Project 3 go here. You can include images, text, and links.</p>
-  <button class="back-btn" onclick="closeProject(3)">Back</button>
-</div>
-
-<section id="contact">
-  <h2>Contact</h2>
-  <p style="text-align:center;">Reach me at: <a href="mailto:youremail@example.com">youremail@example.com</a></p>
-</section>
-
-<footer>
-  &copy; 2025 Flu. All rights reserved.
-</footer>
-
-<!-- === Background Music === -->
-<audio id="bg-music" src="https://cdn.discordapp.com/attachments/1404685834367795302/1415149551584677909/SpotiDownloader.com_-_I_like_the_way_u_talk_to_me_-_NESYA.mp3?ex=68c22839&is=68c0d6b9&hm=3c2e05287b92cf5ac2e7f7c19fa2e550270f4922f1e23568487739efbfee8d85&" loop></audio>
-<button id="music-toggle">Play</button>
-
-<script>
-  // === Background music toggle ===
-  const music = document.getElementById('bg-music');
-  music.volume = 0.5;
-  const btn = document.getElementById('music-toggle');
-  let playing = false;
-
-  btn.addEventListener('click', () => {
-    if(!playing){
-      music.play();
-      btn.innerText = "Stop";
-      playing = true;
-    } else {
-      music.pause();
-      btn.innerText = "Play";
-      playing = false;
+    function escapeForRegex(s){
+      return s.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&');
     }
-  });
 
-  // === Project toggle logic ===
-  function openProject(id){
-    document.getElementById('projects').style.display = 'none';
-    document.getElementById('project-'+id).style.display = 'block';
-  }
+    function process(text){
+      let chars = removeInput.value || '';
+      let original = text;
+      if(removePunct.checked){
+        // remove common punctuation
+        text = text.replace(/[\u2000-\u206F\u2E00-\u2E7F\"'!#%&,:;<>@\[\\\]`{}~()\-\.=+/?]/g, '');
+      }
+      if(!caseSensitive.checked){
+        // we'll process in lowercase but remember original for count
+        const lowerBefore = text.toLowerCase();
+        chars = chars.toLowerCase();
+        const escaped = escapeForRegex(chars);
+        if(escaped.length > 0){
+          const re = new RegExp('[' + escaped + ']', 'g');
+          text = lowerBefore.replace(re, '');
+          // map back to original casing by removing chars from original using case-insensitive re
+          const re2 = new RegExp('['+escaped+']','gi');
+          const removed = original.match(re2) || [];
+          removedCountEl.textContent = removed.length;
+          // remove from original preserving other characters' original case
+          text = original.replace(re2, '');
+        }
+      } else {
+        const escaped = escapeForRegex(chars);
+        if(escaped.length > 0){
+          const re = new RegExp('['+escaped+']','g');
+          const removed = text.match(re) || [];
+          removedCountEl.textContent = removed.length;
+          text = text.replace(re, '');
+        } else {
+          removedCountEl.textContent = 0;
+        }
+      }
 
-  function closeProject(id){
-    document.getElementById('project-'+id).style.display = 'none';
-    document.getElementById('projects').style.display = 'block';
-  }
-</script>
+      if(removeSpaces.checked){
+        const before = text.length;
+        text = text.replace(/\s/g,'');
+        // update removed count additively
+        removedCountEl.textContent = Number(removedCountEl.textContent) + (before - text.length);
+      }
+      if(removeLineBreaks.checked){
+        const before = text.length;
+        text = text.replace(/[\r\n]+/g,'');
+        removedCountEl.textContent = Number(removedCountEl.textContent) + (before - text.length);
+      }
+      return text;
+    }
 
+    btnRemove.addEventListener('click', ()=>{
+      const result = process(input.value);
+      output.value = result;
+    });
+
+    btnPreview.addEventListener('click', ()=>{
+      const result = process(input.value);
+      // preview does not overwrite input, only shows in output
+      output.value = result;
+    });
+
+    btnClear.addEventListener('click', ()=>{input.value=''; output.value=''; removeInput.value=''; removedCountEl.textContent = 0;});
+
+    btnCopy.addEventListener('click', async ()=>{
+      try{
+        await navigator.clipboard.writeText(output.value);
+        btnCopy.textContent = 'Copied!';
+        setTimeout(()=> btnCopy.textContent = 'Copy',1000);
+      }catch(e){
+        alert('Copy failed: '+e);
+      }
+    });
+
+    btnDownload.addEventListener('click', ()=>{
+      const blob = new Blob([output.value], {type:'text/plain'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'result.txt'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    });
+
+    // keyboard shortcut: Ctrl+Enter to remove
+    document.addEventListener('keydown', (e)=>{
+      if(e.ctrlKey && e.key === 'Enter'){
+        e.preventDefault(); btnRemove.click();
+      }
+    });
+  </script>
 </body>
 </html>
