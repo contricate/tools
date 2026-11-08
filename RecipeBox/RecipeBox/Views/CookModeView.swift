@@ -57,7 +57,7 @@ struct CookModeView: View {
                         .accessibilityLabel("Ingredient checklist")
                 }
             }
-            .sheet(isPresented: $showIngredients) { checklistSheet.themed() }
+            .sheet(isPresented: $showIngredients) { checklistSheet.sheetStyle() }
             .confirmationDialog("Leave Cooking Mode?", isPresented: $confirmExit, titleVisibility: .visible) {
                 Button("Save Progress & Leave") { saveProgress(); close() }
                 Button("Finish & Clear Progress", role: .destructive) { CookProgress.clear(recipe.uid); close() }

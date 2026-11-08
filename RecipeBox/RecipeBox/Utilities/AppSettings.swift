@@ -103,6 +103,8 @@ struct ThemedModifier: ViewModifier {
 
 extension View {
     func themed() -> some View { modifier(ThemedModifier()) }
+    /// For sheets and full-screen covers: theme plus their own toast overlay (toasts would otherwise appear behind the sheet).
+    func sheetStyle() -> some View { modifier(ThemedModifier()).toastHost() }
 }
 
 /// Default preference values, registered at launch so non-SwiftUI code sees the same defaults.

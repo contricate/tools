@@ -96,12 +96,12 @@ struct MealPlanView: View {
                 }
             }
             .sheet(item: $adding) { t in
-                PickRecipeSheet(date: t.date, meal: t.meal, replacing: t.replacing).themed()
+                PickRecipeSheet(date: t.date, meal: t.meal, replacing: t.replacing).sheetStyle()
             }
             .sheet(item: $moving) { m in
-                MoveMealSheet(entry: m.entry, copy: m.copy).themed()
+                MoveMealSheet(entry: m.entry, copy: m.copy).sheetStyle()
             }
-            .sheet(isPresented: $showingTemplates) { templatesSheet.themed() }
+            .sheet(isPresented: $showingTemplates) { templatesSheet.sheetStyle() }
             .alert("Save Meal Plan", isPresented: $naming) {
                 TextField("Name, e.g. Healthy Week", text: $planName)
                 Button("Save") { saveTemplate() }

@@ -92,7 +92,7 @@ struct ShoppingListView: View {
             .confirmationDialog("Remove all \(items.count) items?", isPresented: $confirmClearAll, titleVisibility: .visible) {
                 Button("Clear Everything", role: .destructive) { remove(items, message: "List cleared") }
             }
-            .sheet(item: $editing) { item in GroceryItemEditor(item: item).themed() }
+            .sheet(item: $editing) { item in GroceryItemEditor(item: item).sheetStyle() }
         }
     }
 

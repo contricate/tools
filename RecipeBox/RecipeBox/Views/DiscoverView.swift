@@ -50,8 +50,8 @@ struct DiscoverView: View {
         }
         .background(Color(.systemGroupedBackground))
         .navigationTitle("Discover")
-        .sheet(item: $preview) { meal in DiscoverMealSheet(meal: meal).themed() }
-        .sheet(isPresented: $showingAI) { AIIdeasSheet().themed() }
+        .sheet(item: $preview) { meal in DiscoverMealSheet(meal: meal).sheetStyle() }
+        .sheet(isPresented: $showingAI) { AIIdeasSheet().sheetStyle() }
         .task { await loadHome() }
         .refreshable { randomPicks = []; await loadHome() }
     }

@@ -68,11 +68,11 @@ struct UniversalImportView: View {
                     }
                 }
             }
-            .sheet(isPresented: $showTextEntry) { textEntrySheet.themed() }
+            .sheet(isPresented: $showTextEntry) { textEntrySheet.sheetStyle() }
             .sheet(isPresented: $showManual) {
                 RecipeEditView(recipe: nil, prefillTitle: session.draft.title.isEmpty ? (session.evidence?.title ?? "") : session.draft.title,
                                prefillSource: session.evidence?.url.absoluteString ?? "")
-                    .themed()
+                    .sheetStyle()
             }
             .animation(.snappy, value: session.phase)
         }

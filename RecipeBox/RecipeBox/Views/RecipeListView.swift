@@ -93,7 +93,7 @@ struct RecipeListView: View {
                 }
             }
             .toolbar { toolbarContent }
-            .sheet(isPresented: $showingNew) { RecipeEditView(recipe: nil).themed() }
+            .sheet(isPresented: $showingNew) { RecipeEditView(recipe: nil).sheetStyle() }
             .onAppear {
                 if !didApplyDefaultSort {
                     sort = RecipeSort(rawValue: defaultSort) ?? .newest

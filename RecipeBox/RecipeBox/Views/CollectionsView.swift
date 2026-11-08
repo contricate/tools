@@ -37,7 +37,7 @@ struct CollectionsView: View {
                     .accessibilityLabel("New collection")
             }
         }
-        .sheet(isPresented: $showingNew) { NewCollectionSheet().themed() }
+        .sheet(isPresented: $showingNew) { NewCollectionSheet().sheetStyle() }
     }
 }
 
@@ -198,7 +198,7 @@ struct CollectionPickerSheet: View {
             .navigationTitle("Collections")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() }.bold() } }
-            .sheet(isPresented: $showingNew) { NewCollectionSheet(addRecipe: recipe).themed() }
+            .sheet(isPresented: $showingNew) { NewCollectionSheet(addRecipe: recipe).sheetStyle() }
         }
         .presentationDetents([.medium, .large])
     }

@@ -72,16 +72,16 @@ struct RecipeDetailView: View {
         .ignoresSafeArea(edges: recipe.photoData == nil ? [] : .top)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { toolbar }
-        .sheet(isPresented: $showingEdit) { RecipeEditView(recipe: recipe).themed() }
-        .sheet(isPresented: $showingPlan) { PlanRecipeSheet(recipe: recipe) { toasts.show($0) }.themed() }
+        .sheet(isPresented: $showingEdit) { RecipeEditView(recipe: recipe).sheetStyle() }
+        .sheet(isPresented: $showingPlan) { PlanRecipeSheet(recipe: recipe) { toasts.show($0) }.sheetStyle() }
         .sheet(isPresented: $showingGroceries) {
-            GrocerySelectSheet(title: recipe.title, lines: recipe.ingredients.map(displayIngredient)).themed()
+            GrocerySelectSheet(title: recipe.title, lines: recipe.ingredients.map(displayIngredient)).sheetStyle()
         }
-        .sheet(isPresented: $showingCollections) { CollectionPickerSheet(recipe: recipe).themed() }
-        .sheet(isPresented: $showingAssistant) { NavigationStack { AssistantView(recipe: recipe, embedded: true) }.themed() }
-        .sheet(isPresented: $showingConverter) { ConverterView().themed() }
+        .sheet(isPresented: $showingCollections) { CollectionPickerSheet(recipe: recipe).sheetStyle() }
+        .sheet(isPresented: $showingAssistant) { NavigationStack { AssistantView(recipe: recipe, embedded: true) }.sheetStyle() }
+        .sheet(isPresented: $showingConverter) { ConverterView().sheetStyle() }
         .sheet(item: $shareItem) { item in ActivityView(items: item.items).ignoresSafeArea() }
-        .fullScreenCover(isPresented: $showingCookMode) { CookModeView(recipe: recipe, factor: factor).themed() }
+        .fullScreenCover(isPresented: $showingCookMode) { CookModeView(recipe: recipe, factor: factor).sheetStyle() }
         .fullScreenCover(isPresented: $showingCamera) {
             CameraPicker { image in
                 if let d = ImageUtil.downscaledJPEG(image) { addPhoto(d) }

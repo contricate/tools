@@ -80,7 +80,7 @@ struct KitchenFinderView: View {
         .background(Color(.systemGroupedBackground))
         .navigationTitle("What's in My Kitchen?")
         .navigationBarTitleDisplayMode(.inline)
-        .sheet(item: $previewMeal) { meal in DiscoverMealSheet(meal: meal).themed() }
+        .sheet(item: $previewMeal) { meal in DiscoverMealSheet(meal: meal).sheetStyle() }
         .task(id: have.first) { await loadIdeas() }
     }
 

@@ -120,19 +120,19 @@ struct ContentView: View {
             }
         }
         .sheet(isPresented: $router.showImport) {
-            UniversalImportView(initialLink: router.importPrefill).themed()
+            UniversalImportView(initialLink: router.importPrefill).sheetStyle()
         }
         .sheet(isPresented: $router.showCreate) {
-            CreateRecipeView().themed()
+            CreateRecipeView().sheetStyle()
         }
         .sheet(isPresented: $router.showSettings) {
-            SettingsView().themed()
+            SettingsView().sheetStyle()
         }
         .sheet(isPresented: $router.showConverter) {
-            ConverterView().themed()
+            ConverterView().sheetStyle()
         }
         .fullScreenCover(item: $router.cookRecipe) { recipe in
-            CookModeView(recipe: recipe, factor: 1).themed()
+            CookModeView(recipe: recipe, factor: 1).sheetStyle()
         }
     }
 }
