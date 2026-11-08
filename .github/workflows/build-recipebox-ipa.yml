@@ -1,0 +1,48 @@
+name: Build RecipeBox IPA
+
+on:
+  push:
+    paths:
+      - "RecipeBox/**"
+      - ".github/workflows/build-recipebox-ipa.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        working-directory: RecipeBox
+        run: xcodegen generate
+
+      - name: Build app (unsigned)
+        working-directory: RecipeBox
+        run: |
+          xcodebuild \
+            -project RecipeBox.xcodeproj \
+            -scheme RecipeBox \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            build
+
+      - name: Package IPA
+        working-directory: RecipeBox
+        run: |
+          mkdir -p Payload
+          cp -R build/Build/Products/Release-iphoneos/RecipeBox.app Payload/
+          zip -qry RecipeBox.ipa Payload
+          ls -lh RecipeBox.ipa
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: RecipeBox-ipa
+          path: RecipeBox/RecipeBox.ipa
