@@ -1,0 +1,102 @@
+name: Build Aura IPA
+
+on:
+  push:
+    paths:
+      - "Customizer/**"
+      - ".github/workflows/build-aura-ipa.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        working-directory: Customizer
+        run: xcodegen generate
+
+      - name: Build app + widget extension (Release, device)
+        working-directory: Customizer
+        run: |
+          xcodebuild -project Aura.xcodeproj -scheme Aura -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build > build.log 2>&1 || true
+          grep -E "error:|BUILD (SUCCEEDED|FAILED)" build.log | sort -u | head -80
+          grep -q "BUILD SUCCEEDED" build.log
+          test -f build/Build/Products/Release-iphoneos/Aura.app/PlugIns/AuraWidgets.appex/AuraWidgets
+
+      - name: Embed entitlements (ad-hoc signature) and package IPA
+        working-directory: Customizer
+        run: |
+          rm -rf Payload && mkdir Payload
+          cp -R build/Build/Products/Release-iphoneos/Aura.app Payload/
+          # Ad-hoc signing embeds the App Group entitlement so AltStore/SideStore/Sideloadly can register it when re-signing.
+          codesign -f -s - --entitlements Widgets/AuraWidgets.entitlements Payload/Aura.app/PlugIns/AuraWidgets.appex
+          codesign -f -s - --entitlements App/Aura.entitlements Payload/Aura.app
+          codesign -d --entitlements - Payload/Aura.app 2>/dev/null | grep -q application-groups
+          zip -qry Aura.ipa Payload
+          ls -lh Aura.ipa
+          test $(stat -f%z Aura.ipa) -gt 200000
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: Aura-ipa
+          path: Customizer/Aura.ipa
+
+      - name: Pick simulator
+        id: sim
+        run: |
+          UDID=$(xcrun simctl list devices available -j | python3 -c '
+          import json,sys
+          d=json.load(sys.stdin)["devices"]
+          best=None
+          for rt,devs in d.items():
+              if "iOS-18" not in rt and "iOS-19" not in rt and "iOS-2" not in rt: continue
+              for x in devs:
+                  if x["name"] == "iPhone 16": best=x["udid"]
+          if not best:
+              for rt,devs in d.items():
+                  if "iOS" in rt:
+                      for x in devs:
+                          if x["name"].startswith("iPhone"): best=x["udid"]
+          print(best)')
+          echo "udid=$UDID" >> "$GITHUB_OUTPUT"
+          echo "Simulator: $UDID"
+
+      - name: Unit tests
+        working-directory: Customizer
+        run: |
+          set -o pipefail
+          xcodebuild test -project Aura.xcodeproj -scheme Aura -destination "id=${{ steps.sim.outputs.udid }}" \
+            -derivedDataPath simbuild CODE_SIGNING_ALLOWED=NO 2>&1 \
+            | grep -E "error:|Test Case .*(passed|failed)|XCTAssert|Executed|TEST (SUCCEEDED|FAILED)"
+
+      - name: Launch checks
+        working-directory: Customizer
+        run: |
+          UDID=${{ steps.sim.outputs.udid }}
+          APP=$(find simbuild/Build/Products -name "Aura.app" -path "*iphonesimulator*" | head -1)
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl install "$UDID" "$APP"
+          FAIL=0
+          for tab in home studio library designs settings theme island icons wallpaper battery charging; do
+            xcrun simctl terminate "$UDID" com.aura.customizer 2>/dev/null || true
+            xcrun simctl launch "$UDID" com.aura.customizer -tab "$tab" >/dev/null
+            sleep 7
+            if xcrun simctl spawn "$UDID" launchctl list | grep -q "com.aura.customizer"; then
+              echo "SCREEN $tab: running"
+            else
+              echo "SCREEN $tab: NOT RUNNING (crash?)"; FAIL=1
+            fi
+          done
+          find ~/Library/Logs/DiagnosticReports -name "Aura*" -mmin -20 2>/dev/null | head -2 | while read f; do
+            echo "CRASH REPORT $f"; grep -m 15 -E "Exception Type|Termination Reason|Aura  *0x|\"symbol\"" "$f" || true
+          done
+          exit $FAIL

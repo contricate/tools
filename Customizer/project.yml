@@ -1,0 +1,87 @@
+name: Aura
+options:
+  bundleIdPrefix: com.aura
+  deploymentTarget:
+    iOS: "18.0"
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    CODE_SIGNING_ALLOWED: NO
+    CODE_SIGNING_REQUIRED: NO
+    CODE_SIGN_IDENTITY: ""
+targets:
+  Aura:
+    type: application
+    platform: iOS
+    sources: [App, Shared, Resources]
+    dependencies:
+      - target: AuraWidgets
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: Aura
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UILaunchScreen: {}
+        UIApplicationSupportsIndirectInputEvents: true
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        UIUserInterfaceStyle: Dark
+        NSSupportsLiveActivities: true
+        NSPhotoLibraryAddUsageDescription: Save wallpapers, icons and contact posters you design to your photo library.
+        NSPhotoLibraryUsageDescription: Use your photos in themes, widgets and wallpapers.
+        CFBundleURLTypes:
+          - CFBundleURLName: com.aura.customizer
+            CFBundleURLSchemes: [aura]
+        LSApplicationQueriesSchemes: [instagram, youtube, spotify, whatsapp, twitter, fb, tiktok, snapchat]
+    entitlements:
+      path: App/Aura.entitlements
+      properties:
+        com.apple.security.application-groups: [group.com.aura.customizer]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.aura.customizer
+        TARGETED_DEVICE_FAMILY: "1"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES: "AppIcon-Neon AppIcon-Mono AppIcon-Sunset AppIcon-Ocean"
+        ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS: YES
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+  AuraWidgets:
+    type: app-extension
+    platform: iOS
+    sources: [Widgets, Shared]
+    info:
+      path: Widgets/Info.plist
+      properties:
+        CFBundleDisplayName: Aura Widgets
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: Widgets/AuraWidgets.entitlements
+      properties:
+        com.apple.security.application-groups: [group.com.aura.customizer]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.aura.customizer.widgets
+        TARGETED_DEVICE_FAMILY: "1"
+        APPLICATION_EXTENSION_API_ONLY: YES
+  AuraTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources: [Tests]
+    dependencies:
+      - target: Aura
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+schemes:
+  Aura:
+    build:
+      targets:
+        Aura: all
+        AuraTests: [test]
+    test:
+      targets: [AuraTests]
