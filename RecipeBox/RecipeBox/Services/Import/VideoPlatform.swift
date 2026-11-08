@@ -101,7 +101,9 @@ enum VideoPlatform: String, CaseIterable, Codable {
         comps?.query = nil
         comps?.fragment = nil
         comps?.scheme = "https"
-        comps?.host = comps?.host?.lowercased().replacingOccurrences(of: "www.", with: "").replacingOccurrences(of: "m.", with: "")
+        var host = (comps?.host ?? "").lowercased()
+        for prefix in ["www.", "m."] where host.hasPrefix(prefix) { host = String(host.dropFirst(prefix.count)) }
+        comps?.host = host
         var s = comps?.string ?? url.absoluteString
         while s.hasSuffix("/") { s.removeLast() }
         return s
