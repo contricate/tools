@@ -129,7 +129,10 @@ final class ImportSession {
             }
             if !ev.title.isEmpty { evidenceItems.append(EvidenceItem(label: "Video title", text: ev.title)) }
             if !ev.creator.isEmpty { evidenceItems.append(EvidenceItem(label: "Creator", text: ev.creator)) }
-            if !ev.description.isEmpty { evidenceItems.append(EvidenceItem(label: "Caption / description", text: ev.description)) }
+            if !ev.description.isEmpty {
+                evidenceItems.append(EvidenceItem(label: "Video description / caption written by the creator (often contains the ingredient list and method)",
+                                                  text: ev.description))
+            }
             if !ev.transcript.isEmpty { evidenceItems.append(EvidenceItem(label: ev.transcriptSource, text: ev.transcript)) }
 
             // 2. Images
@@ -152,6 +155,7 @@ final class ImportSession {
                 var d = Self.draft(from: structured)
                 d.platform = p.rawValue
                 d.creator = ev.creator
+                d.sourceDescription = ev.description
                 if p == .website {
                     d.sourceKind = "web"
                     d.evidence = ["Structured recipe data published on \(ev.structuredRecipeSource)"]
@@ -235,6 +239,7 @@ final class ImportSession {
         d.sourceURL = url?.absoluteString ?? ""
         d.sourceKind = "video"
         d.creator = evidence?.creator ?? ""
+        d.sourceDescription = evidence?.description ?? ""
         if d.title.isEmpty { d.title = evidence?.title ?? "" }
         if d.searchQuery.isEmpty { d.searchQuery = d.title }
         d.evidence = evidenceItems.map(\.label) + (images.isEmpty ? [] : ["\(images.count) image\(images.count == 1 ? "" : "s")"])

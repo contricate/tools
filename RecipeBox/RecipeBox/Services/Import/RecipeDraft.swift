@@ -62,6 +62,8 @@ struct RecipeDraft {
     var evidence: [String] = []
     var searchQuery = ""
     var creator = ""
+    /// The video's description/caption as published, shown in the preview for reference.
+    var sourceDescription = ""
 
     var hasContent: Bool { !ingredients.isEmpty || !steps.isEmpty }
 

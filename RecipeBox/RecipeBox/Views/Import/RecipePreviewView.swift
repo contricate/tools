@@ -28,6 +28,7 @@ struct RecipePreviewView: View {
                         NutritionSummaryView(ingredients: draft.ingredients.map(\.text),
                                              servings: max(1, draft.servings), servingsKnown: draft.servings > 0)
                     }
+                    if !draft.sourceDescription.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { descriptionSection }
                     sourceSection
                 }
                 .padding(.horizontal)
@@ -303,6 +304,27 @@ struct RecipePreviewView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .card()
+    }
+
+    @State private var showDescription = false
+
+    private var descriptionSection: some View {
+        DisclosureGroup(isExpanded: $showDescription) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(draft.sourceDescription)
+                    .font(.subheadline)
+                    .textSelection(.enabled)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Button {
+                    UIPasteboard.general.string = draft.sourceDescription
+                } label: { Label("Copy Description", systemImage: "doc.on.doc") }
+                .font(.caption.bold())
+            }
+            .padding(.top, 8)
+        } label: {
+            Label("Video description", systemImage: "text.alignleft").font(.headline)
+        }
         .card()
     }
 

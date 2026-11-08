@@ -94,6 +94,37 @@ enum MetaTags {
     }
 }
 
+/// Pulls string values out of JSON embedded in a page's HTML (e.g. a post's full caption).
+enum EmbeddedText {
+    /// Returns every string matched by `pattern`, whose first capture group is a raw JSON string body.
+    static func strings(_ pattern: String, in html: String, limit: Int = 600_000) -> [String] {
+        guard let r = try? NSRegularExpression(pattern: pattern) else { return [] }
+        let ns = html as NSString
+        return r.matches(in: html, range: NSRange(location: 0, length: min(ns.length, limit))).compactMap { m in
+            guard m.numberOfRanges > 1, m.range(at: 1).location != NSNotFound else { return nil }
+            return decode(ns.substring(with: m.range(at: 1)))
+        }
+    }
+
+    /// Decodes a JSON string body (handles \n, \u00e9, \" …).
+    static func decode(_ raw: String) -> String? {
+        guard let data = "\"\(raw)\"".data(using: .utf8),
+              let s = try? JSONSerialization.jsonObject(with: data, options: [.fragmentsAllowed]) as? String else { return nil }
+        return s
+    }
+
+    static let jsonString = #"((?:[^"\\]|\\.)*)"#
+
+    static func longest(_ values: [String]) -> String {
+        values.max { $0.count < $1.count } ?? ""
+    }
+
+    static func looksTruncated(_ s: String) -> Bool {
+        let t = s.trimmingCharacters(in: .whitespacesAndNewlines)
+        return t.hasSuffix("...") || t.hasSuffix("…") || t.lowercased().hasSuffix(" more")
+    }
+}
+
 enum VideoSourceFetcher {
     struct Options {
         var fetchCaptions = true
@@ -114,6 +145,9 @@ enum VideoSourceFetcher {
 
         if options.followLinks && ev.structuredRecipe == nil {
             await followLinks(&ev, progress: progress)
+        }
+        if EmbeddedText.looksTruncated(ev.description) && !ev.notes.contains(where: { $0.contains("cut off") }) {
+            ev.notes.append("The video description looks cut off. If the recipe is in the full description, paste it in for a complete import.")
         }
         return ev
     }
@@ -224,9 +258,11 @@ enum VideoSourceFetcher {
 
     private static func tiktok(_ ev: inout VideoEvidence, progress: (String) -> Void) async {
         progress("Resolving TikTok link")
-        // Short links (vm.tiktok.com) redirect to the full video URL.
-        if let (_, resp) = try? await HTTP.get(ev.url, accept: "text/html"), let final = resp.url {
+        // Short links (vm.tiktok.com) redirect to the full video URL. The page also embeds the full caption.
+        var pageCaption = ""
+        if let (html, final) = try? await HTTP.html(ev.url) {
             ev.resolvedURL = final
+            pageCaption = EmbeddedText.longest(EmbeddedText.strings(#""desc"\s*:\s*"# + EmbeddedText.jsonString, in: html))
         }
         progress("Reading TikTok caption")
         let api = URL(string: "https://www.tiktok.com/oembed?url=\(HTTP.encode(ev.resolvedURL.absoluteString))")!
@@ -234,7 +270,8 @@ enum VideoSourceFetcher {
             ev.blockedReason = "TikTok didn't return details for this video. It may be private, deleted, or region-restricted."
             return
         }
-        ev.description = o["title"] as? String ?? ""
+        let embedCaption = o["title"] as? String ?? ""
+        ev.description = pageCaption.count > embedCaption.count ? pageCaption : embedCaption
         ev.creator = o["author_name"] as? String ?? ""
         ev.title = firstLine(ev.description)
         if let t = o["thumbnail_url"] as? String, let u = URL(string: t) {
@@ -341,8 +378,15 @@ enum VideoSourceFetcher {
         applyMeta(meta, to: &ev, base: final)
         if ev.platform == .instagram || ev.platform == .facebook {
             ev.description = MetaTags.captionFromSocialDescription(ev.description)
-            if ev.description.count < 160 {
-                ev.notes.append("\(ev.platform.rawValue) only shares a short preview of the caption publicly; it may be cut off.")
+            let q = EmbeddedText.jsonString
+            let patterns = ev.platform == .instagram
+                ? [#""edge_media_to_caption"\s*:\s*\{\s*"edges"\s*:\s*\[\s*\{\s*"node"\s*:\s*\{[^{}]*?"text"\s*:\s*"# + q,
+                   #""caption"\s*:\s*\{[^{}]*?"text"\s*:\s*"# + q]
+                : [#""message"\s*:\s*\{[^{}]*?"text"\s*:\s*"# + q]
+            let embedded = EmbeddedText.longest(patterns.flatMap { EmbeddedText.strings($0, in: html) })
+            if embedded.count > ev.description.count { ev.description = embedded }
+            if ev.description.count < 160 || EmbeddedText.looksTruncated(ev.description) {
+                ev.notes.append("\(ev.platform.rawValue) only shared a short preview of the description, so it may be cut off. Tap “Paste caption or transcript” to add the full text.")
             }
         }
         if ev.platform == .pinterest, let r = try? NSRegularExpression(pattern: #""link"\s*:\s*"(https?:[^"]+)""#) {

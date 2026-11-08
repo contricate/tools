@@ -62,6 +62,9 @@ enum AIRecipeExtractor {
     captions or transcript, text recognized in video images (OCR), images themselves, and recipe pages the creator linked.
 
     Rules — accuracy matters more than completeness:
+    - The creator's description/caption frequently contains the full ingredient list and method. Read it carefully first and \
+    treat it as the primary source; use the transcript, on-screen text and images to fill gaps or resolve conflicts \
+    (if they disagree, prefer the description and add a warning).
     - Use ONLY the evidence provided. Never invent ingredients, quantities, temperatures, times or steps.
     - status "confirmed": explicitly stated in the evidence (text, transcript, or clearly legible text in an image).
     - status "estimated": a reasonable inference from the evidence (e.g. an ingredient clearly visible but not named, \

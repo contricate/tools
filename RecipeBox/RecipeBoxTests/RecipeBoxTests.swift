@@ -141,6 +141,27 @@ final class ImportTests: XCTestCase {
         XCTAssertEqual(MetaTags.captionFromSocialDescription(d), "Lemon pasta: 200g spaghetti, 1 lemon")
     }
 
+    func testEmbeddedFullCaption() {
+        let html = #"<script>{"itemStruct":{"desc":"Garlic noodles\nIngredients:\n- 200g noodles\n- 4 cloves garlic \u2764\ufe0f","author":"x"},"other":{"desc":"short"}}</script>"#
+        let full = EmbeddedText.longest(EmbeddedText.strings(#""desc"\s*:\s*"# + EmbeddedText.jsonString, in: html))
+        XCTAssertTrue(full.hasPrefix("Garlic noodles\nIngredients:"))
+        XCTAssertTrue(full.contains("4 cloves garlic ❤️"))
+        let parsed = HeuristicRecipeParser.parse(full)
+        XCTAssertEqual(parsed.ingredients, ["200g noodles", "4 cloves garlic ❤️"])
+    }
+
+    func testInstagramEmbeddedCaption() {
+        let html = #"{"edge_media_to_caption":{"edges":[{"node":{"created_at":"1","text":"Lemon pasta \"easy\"\nIngredients: 200g spaghetti, 1 lemon"}}]}}"#
+        let pattern = #""edge_media_to_caption"\s*:\s*\{\s*"edges"\s*:\s*\[\s*\{\s*"node"\s*:\s*\{[^{}]*?"text"\s*:\s*"# + EmbeddedText.jsonString
+        XCTAssertEqual(EmbeddedText.strings(pattern, in: html).first, "Lemon pasta \"easy\"\nIngredients: 200g spaghetti, 1 lemon")
+    }
+
+    func testTruncationDetection() {
+        XCTAssertTrue(EmbeddedText.looksTruncated("Ingredients: 2 eggs, 1 cup…"))
+        XCTAssertTrue(EmbeddedText.looksTruncated("Best pasta ever... more"))
+        XCTAssertFalse(EmbeddedText.looksTruncated("Bake for 20 minutes."))
+    }
+
     func testMetaTags() {
         let html = #"<meta property="og:title" content="Best Tacos &amp; More"><meta name="description" content='Tasty'>"#
         let m = MetaTags.parse(html)

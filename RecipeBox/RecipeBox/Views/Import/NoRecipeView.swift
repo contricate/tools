@@ -21,6 +21,7 @@ struct NoRecipeView: View {
     @State private var dishGuess: AIRecipeSearch.DishGuess?
     @State private var identifying = false
     @State private var errorText: String?
+    @State private var showFullDescription = false
 
     var body: some View {
         ScrollView {
@@ -73,7 +74,13 @@ struct NoRecipeView: View {
                         Text(e.title.isEmpty ? "Untitled video" : e.title).font(.subheadline.bold())
                         if !e.creator.isEmpty { Text("by \(e.creator)").font(.caption).foregroundStyle(.secondary) }
                         if !e.description.isEmpty {
-                            Text(e.description).font(.caption).foregroundStyle(.secondary).lineLimit(4)
+                            Text(e.description).font(.caption).foregroundStyle(.secondary)
+                                .lineLimit(showFullDescription ? nil : 4)
+                                .textSelection(.enabled)
+                            Button(showFullDescription ? "Show less" : "Show full description") {
+                                withAnimation { showFullDescription.toggle() }
+                            }
+                            .font(.caption.bold())
                         }
                     }
                     if session.draft.hasContent {
