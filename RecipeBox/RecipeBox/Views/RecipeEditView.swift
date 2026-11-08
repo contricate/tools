@@ -25,6 +25,8 @@ struct RecipeEditView: View {
     @State private var sourceURL = ""
     @State private var photoData: Data?
     @State private var pickerItem: PhotosPickerItem?
+    @State private var showingLibrary = false
+    @State private var showingCamera = false
     @State private var newIngredient = ""
     @State private var newStep = ""
     @State private var showingBulkIngredients = false
@@ -159,35 +161,51 @@ struct RecipeEditView: View {
     }
 
     private var photoPicker: some View {
-        PhotosPicker(selection: $pickerItem, matching: .images) {
-            Group {
-                if let data = photoData, let image = UIImage(data: data) {
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(height: 180)
-                        .frame(maxWidth: .infinity)
-                        .clipped()
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                } else {
-                    VStack(spacing: 8) {
-                        Image(systemName: "camera.fill").font(.title)
-                        Text("Add Photo").font(.subheadline)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 120)
-                    .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
-                }
+        Menu {
+            Button("Choose from Library", systemImage: "photo.on.rectangle") { showingLibrary = true }
+            if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                Button("Take Photo", systemImage: "camera") { showingCamera = true }
             }
-        }
-        .buttonStyle(.plain)
-        .contextMenu {
             if photoData != nil {
                 Button("Remove Photo", systemImage: "trash", role: .destructive) {
                     photoData = nil
                     pickerItem = nil
                 }
             }
+        } label: {
+            Group {
+                if let data = photoData, let image = UIImage(data: data) {
+                    Color.clear
+                        .frame(height: 190)
+                        .frame(maxWidth: .infinity)
+                        .overlay { Image(uiImage: image).resizable().scaledToFill() }
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .overlay(alignment: .bottomTrailing) {
+                            Image(systemName: "pencil.circle.fill")
+                                .font(.title)
+                                .symbolRenderingMode(.palette)
+                                .foregroundStyle(.white, Color.accentColor)
+                                .padding(8)
+                        }
+                } else {
+                    VStack(spacing: 8) {
+                        Image(systemName: "camera.fill").font(.title)
+                        Text("Add Photo").font(.subheadline.weight(.medium))
+                    }
+                    .foregroundStyle(Color.accentColor)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 130)
+                    .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
+                }
+            }
+        }
+        .buttonStyle(.plain)
+        .photosPicker(isPresented: $showingLibrary, selection: $pickerItem, matching: .images)
+        .fullScreenCover(isPresented: $showingCamera) {
+            CameraPicker { image in
+                photoData = ImageUtil.downscaledJPEG(image)
+            }
+            .ignoresSafeArea()
         }
     }
 
@@ -215,18 +233,9 @@ struct RecipeEditView: View {
     }
 
     private func loadPhoto(_ item: PhotosPickerItem?) async {
-        guard let item,
-              let data = try? await item.loadTransferable(type: Data.self),
-              let image = UIImage(data: data) else { return }
-        let maxSide: CGFloat = 1600
-        let scale = min(1, maxSide / max(image.size.width, image.size.height))
-        let size = CGSize(width: image.size.width * scale, height: image.size.height * scale)
-        let resized = UIGraphicsImageRenderer(size: size).image { _ in
-            image.draw(in: CGRect(origin: .zero, size: size))
-        }
-        await MainActor.run {
-            photoData = resized.jpegData(compressionQuality: 0.8)
-        }
+        guard let item, let data = try? await item.loadTransferable(type: Data.self) else { return }
+        let jpeg = ImageUtil.downscaledJPEG(data)
+        await MainActor.run { photoData = jpeg }
     }
 
     private func save() {

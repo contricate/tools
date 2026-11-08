@@ -9,6 +9,10 @@ struct ShoppingListView: View {
 
     private var unchecked: [ShoppingItem] { items.filter { !$0.isChecked } }
     private var checked: [ShoppingItem] { items.filter { $0.isChecked } }
+    private var aisles: [String] {
+        let used = Set(unchecked.map { GroceryAisle.classify($0.name) })
+        return GroceryAisle.order.filter { used.contains($0) }
+    }
 
     var body: some View {
         NavigationStack {
@@ -29,10 +33,13 @@ struct ShoppingListView: View {
                             .font(.subheadline)
                     }
                 }
-                if !unchecked.isEmpty {
-                    Section("To Buy (\(unchecked.count))") {
-                        ForEach(unchecked) { row($0) }
-                            .onDelete { delete($0, from: unchecked) }
+                ForEach(aisles, id: \.self) { aisle in
+                    let list = unchecked.filter { GroceryAisle.classify($0.name) == aisle }
+                    Section {
+                        ForEach(list) { row($0) }
+                            .onDelete { delete($0, from: list) }
+                    } header: {
+                        Label("\(aisle) (\(list.count))", systemImage: GroceryAisle.icon(aisle))
                     }
                 }
                 if !checked.isEmpty {
@@ -65,7 +72,7 @@ struct ShoppingListView: View {
 
     private func row(_ item: ShoppingItem) -> some View {
         Button {
-            withAnimation { item.isChecked.toggle() }
+            withAnimation(.snappy) { item.isChecked.toggle() }
         } label: {
             HStack {
                 Image(systemName: item.isChecked ? "checkmark.circle.fill" : "circle")
@@ -83,10 +90,17 @@ struct ShoppingListView: View {
             }
         }
         .buttonStyle(.plain)
+        .sensoryFeedback(.selection, trigger: item.isChecked)
     }
 
     private var shareText: String {
-        "Shopping List\n" + unchecked.map { "☐ \($0.name)" }.joined(separator: "\n")
+        var text = "Shopping List"
+        for aisle in aisles {
+            text += "\n\n\(aisle.uppercased())\n"
+            text += unchecked.filter { GroceryAisle.classify($0.name) == aisle }
+                .map { "☐ \($0.name)" }.joined(separator: "\n")
+        }
+        return text
     }
 
     private func add() {

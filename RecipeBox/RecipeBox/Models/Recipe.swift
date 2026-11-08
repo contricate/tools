@@ -19,6 +19,8 @@ final class Recipe {
     var createdAt: Date = Date()
     var lastCooked: Date?
     var timesCooked: Int = 0
+    @Relationship(deleteRule: .cascade, inverse: \MealPlanEntry.recipe)
+    var planEntries: [MealPlanEntry]? = []
 
     init(title: String,
          summary: String = "",
@@ -92,6 +94,68 @@ final class ShoppingItem {
         self.fromRecipe = fromRecipe
         self.createdAt = Date()
     }
+}
+
+@Model
+final class MealPlanEntry {
+    var date: Date = Date()
+    var meal: String = "Dinner"
+    var recipe: Recipe?
+    var createdAt: Date = Date()
+
+    init(date: Date, meal: String, recipe: Recipe?) {
+        self.date = Calendar.current.startOfDay(for: date)
+        self.meal = meal
+        self.recipe = recipe
+        self.createdAt = Date()
+    }
+
+    static let meals = ["Breakfast", "Lunch", "Dinner", "Snack"]
+}
+
+/// Plain Codable copy of a recipe, used for backup files.
+struct RecipeBackup: Codable {
+    var title: String
+    var summary: String
+    var category: String
+    var servings: Int
+    var prepMinutes: Int
+    var cookMinutes: Int
+    var ingredients: [String]
+    var steps: [String]
+    var notes: String
+    var sourceURL: String
+    var isFavorite: Bool
+    var rating: Int
+    var photoData: Data?
+    var createdAt: Date
+    var lastCooked: Date?
+    var timesCooked: Int
+
+    init(_ r: Recipe) {
+        title = r.title; summary = r.summary; category = r.category
+        servings = r.servings; prepMinutes = r.prepMinutes; cookMinutes = r.cookMinutes
+        ingredients = r.ingredients; steps = r.steps; notes = r.notes
+        sourceURL = r.sourceURL; isFavorite = r.isFavorite; rating = r.rating
+        photoData = r.photoData; createdAt = r.createdAt
+        lastCooked = r.lastCooked; timesCooked = r.timesCooked
+    }
+
+    func makeRecipe() -> Recipe {
+        let r = Recipe(title: title, summary: summary, category: category, servings: servings,
+                       prepMinutes: prepMinutes, cookMinutes: cookMinutes,
+                       ingredients: ingredients, steps: steps, notes: notes)
+        r.sourceURL = sourceURL; r.isFavorite = isFavorite; r.rating = rating
+        r.photoData = photoData; r.createdAt = createdAt
+        r.lastCooked = lastCooked; r.timesCooked = timesCooked
+        return r
+    }
+}
+
+struct BackupFile: Codable {
+    var version: Int = 1
+    var exportedAt: Date = Date()
+    var recipes: [RecipeBackup]
 }
 
 enum SampleRecipes {
