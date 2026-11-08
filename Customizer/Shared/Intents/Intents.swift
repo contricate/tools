@@ -161,3 +161,26 @@ struct ChargingIslandIntent: LiveActivityIntent {
         return .result()
     }
 }
+
+/// Applies the configured theme, or the next one if none was chosen.
+struct ThemeControlAction: AppIntent {
+    static var title: LocalizedStringResource = "Apply Configured Theme"
+    static var isDiscoverable = false
+    @Parameter(title: "Theme ID") var themeID: String
+
+    init() {}
+    init(themeID: String) { self.themeID = themeID }
+
+    func perform() async throws -> some IntentResult {
+        var lib = SharedStore.load()
+        if let id = UUID(uuidString: themeID), lib.theme(id) != nil {
+            lib.activeThemeID = id
+        } else if !lib.themes.isEmpty {
+            let idx = lib.themes.firstIndex { $0.id == lib.activeThemeID } ?? -1
+            lib.activeThemeID = lib.themes[(idx + 1) % lib.themes.count].id
+        }
+        SharedStore.save(lib)
+        SharedStore.defaults.set(true, forKey: "pending.islandRefresh")
+        return .result()
+    }
+}

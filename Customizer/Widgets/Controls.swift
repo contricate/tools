@@ -13,14 +13,8 @@ struct ThemeControlConfig: ControlConfigurationIntent {
 struct ApplyThemeControl: ControlWidget {
     var body: some ControlWidgetConfiguration {
         AppIntentControlConfiguration(kind: "aura.control.applyTheme", intent: ThemeControlConfig.self) { config in
-            if let theme = config.theme {
-                ControlWidgetButton(action: ApplyThemeIntent(theme: theme)) {
-                    Label(theme.name, systemImage: "paintpalette.fill")
-                }
-            } else {
-                ControlWidgetButton(action: NextThemeIntent()) {
-                    Label("Next Theme", systemImage: "paintpalette.fill")
-                }
+            ControlWidgetButton(action: ThemeControlAction(themeID: config.theme?.id ?? "")) {
+                Label(config.theme?.name ?? "Next Theme", systemImage: "paintpalette.fill")
             }
         }
         .displayName("Apply Theme")
@@ -61,3 +55,4 @@ struct ChargingScreenControl: ControlWidget {
         .displayName("Aura Charging Screen")
     }
 }
+

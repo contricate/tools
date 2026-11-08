@@ -76,7 +76,7 @@ struct GrainOverlay: View {
     var body: some View {
         Canvas { ctx, size in
             var seed: UInt64 = 0x9E3779B97F4A7C15
-            let count = Int(size.width * size.height / 30 * amount)
+            let count = Int(Double(size.width * size.height) / 30.0 * amount)
             for _ in 0..<min(count, 20000) {
                 seed = seed &* 6364136223846793005 &+ 1442695040888963407
                 let x = CGFloat(seed >> 33) .truncatingRemainder(dividingBy: max(1, size.width))
