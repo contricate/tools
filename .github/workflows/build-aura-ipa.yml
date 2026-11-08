@@ -7,6 +7,10 @@ on:
       - ".github/workflows/build-aura-ipa.yml"
   workflow_dispatch:
 
+concurrency:
+  group: aura-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: macos-15
@@ -71,11 +75,23 @@ jobs:
 
       - name: Unit tests
         working-directory: Customizer
+        timeout-minutes: 20
         run: |
-          set -o pipefail
+          xcrun simctl boot "${{ steps.sim.outputs.udid }}" || true
+          xcrun simctl bootstatus "${{ steps.sim.outputs.udid }}" -b
+          set +e
           xcodebuild test -project Aura.xcodeproj -scheme Aura -destination "id=${{ steps.sim.outputs.udid }}" \
-            -derivedDataPath simbuild CODE_SIGNING_ALLOWED=NO 2>&1 \
-            | grep -E "error:|Test Case .*(passed|failed)|XCTAssert|Executed|TEST (SUCCEEDED|FAILED)"
+            -derivedDataPath simbuild CODE_SIGNING_ALLOWED=NO \
+            -test-timeouts-enabled YES -default-test-execution-time-allowance 60 -maximum-test-execution-time-allowance 120 \
+            > test.log 2>&1 &
+          PID=$!
+          ( while kill -0 $PID 2>/dev/null; do sleep 60; echo "[still running] $(tail -1 test.log | cut -c1-160)"; done ) &
+          wait $PID
+          STATUS=$?
+          grep -E "error:|Test Case .*(passed|failed)|XCTAssert|Executed|TEST (SUCCEEDED|FAILED)" test.log
+          echo "----- last lines -----"
+          tail -25 test.log | cut -c1-300
+          exit $STATUS
 
       - name: Launch checks
         working-directory: Customizer
