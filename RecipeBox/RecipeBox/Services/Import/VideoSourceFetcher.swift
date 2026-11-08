@@ -113,7 +113,8 @@ enum EmbeddedText {
         return s
     }
 
-    static let jsonString = #"((?:[^"\\]|\\.)*)"#
+    /// Matches a complete JSON string literal (opening quote, body, closing quote); group 1 is the body.
+    static let jsonString = #""((?:[^"\\]|\\.)*)""#
 
     static func longest(_ values: [String]) -> String {
         values.max { $0.count < $1.count } ?? ""
