@@ -1,7 +1,7 @@
 import Foundation
 
 enum GroceryAisle {
-    static let order = ["Produce", "Meat & Seafood", "Dairy & Eggs", "Bakery", "Pantry", "Spices & Baking", "Frozen", "Drinks", "Other"]
+    static let order = ["Produce", "Meat & Seafood", "Dairy & Eggs", "Bakery", "Pantry", "Spices & Baking", "Frozen", "Drinks", "Household", "Other"]
 
     static func icon(_ aisle: String) -> String {
         switch aisle {
@@ -13,12 +13,14 @@ enum GroceryAisle {
         case "Spices & Baking": return "sparkles"
         case "Frozen": return "snowflake"
         case "Drinks": return "cup.and.saucer"
+        case "Household": return "house"
         default: return "bag"
         }
     }
 
     private static let keywords: [(String, [String])] = [
         ("Spices & Baking", ["salt", "pepper", "paprika", "cumin", "cinnamon", "oregano", "thyme", "basil, dried", "chili powder", "nutmeg", "baking soda", "baking powder", "yeast", "vanilla", "cocoa", "chocolate chip", "sugar", "flour", "cornstarch", "spice", "seasoning", "bay leaf", "bay leaves", "garlic powder", "onion powder", "turmeric", "curry", "ginger, ground", "cloves, ground"]),
+        ("Household", ["paper towel", "toilet paper", "foil", "plastic wrap", "cling film", "parchment", "baking paper", "detergent", "dish soap", "soap", "sponge", "trash bag", "bin bag", "napkin", "zip bag", "ziploc", "batteries", "cleaner"]),
         ("Frozen", ["frozen", "ice cream"]),
         ("Meat & Seafood", ["chicken", "beef", "pork", "bacon", "sausage", "turkey", "lamb", "ham", "steak", "ground meat", "salmon", "tuna", "shrimp", "fish", "cod", "tilapia", "prosciutto", "pepperoni", "chorizo"]),
         ("Dairy & Eggs", ["milk", "butter", "cheese", "parmesan", "mozzarella", "cheddar", "cream", "yogurt", "yoghurt", "egg", "sour cream", "ricotta", "feta"]),

@@ -23,6 +23,7 @@ jobs:
       - name: Build app (unsigned)
         working-directory: RecipeBox
         run: |
+          set -o pipefail
           xcodebuild \
             -project RecipeBox.xcodeproj \
             -scheme RecipeBox \
@@ -31,7 +32,8 @@ jobs:
             -destination 'generic/platform=iOS' \
             -derivedDataPath build \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
-            build
+            build 2>&1 | grep -E "error:|warning: unre|BUILD (SUCCEEDED|FAILED)" || true
+          test -d build/Build/Products/Release-iphoneos/RecipeBox.app
 
       - name: Package IPA
         working-directory: RecipeBox
@@ -46,3 +48,58 @@ jobs:
         with:
           name: RecipeBox-ipa
           path: RecipeBox/RecipeBox.ipa
+
+      - name: Pick simulator
+        id: sim
+        run: |
+          UDID=$(xcrun simctl list devices available -j | python3 -c '
+          import json,sys
+          d=json.load(sys.stdin)["devices"]
+          best=None
+          for rt,devs in d.items():
+              if "iOS" not in rt: continue
+              for x in devs:
+                  if x["name"].startswith("iPhone") and "Pro" in x["name"] and "Max" not in x["name"]:
+                      best=x["udid"]
+          if not best:
+              for rt,devs in d.items():
+                  for x in devs:
+                      if "iOS" in rt and x["name"].startswith("iPhone"): best=x["udid"]
+          print(best)')
+          echo "udid=$UDID" >> "$GITHUB_OUTPUT"
+          echo "Simulator: $UDID"
+
+      - name: Run unit tests
+        working-directory: RecipeBox
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project RecipeBox.xcodeproj \
+            -scheme RecipeBox \
+            -destination "id=${{ steps.sim.outputs.udid }}" \
+            -derivedDataPath simbuild \
+            CODE_SIGNING_ALLOWED=NO 2>&1 | grep -E "error:|Test Case .*(passed|failed)|XCTAssert|Executed|TEST (SUCCEEDED|FAILED)"
+
+      - name: Screenshots
+        working-directory: RecipeBox
+        continue-on-error: true
+        run: |
+          UDID=${{ steps.sim.outputs.udid }}
+          APP=$(find simbuild/Build/Products -name "RecipeBox.app" -path "*iphonesimulator*" | head -1)
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl install "$UDID" "$APP"
+          mkdir -p shots
+          for screen in home cookbook detail cook plan groceries assistant settings import discover kitchen; do
+            xcrun simctl terminate "$UDID" com.recipebox.app || true
+            xcrun simctl launch "$UDID" com.recipebox.app -demo -screen "$screen"
+            sleep 7
+            xcrun simctl io "$UDID" screenshot "shots/$screen.png"
+            sips -Z 640 -s format jpeg -s formatOptions 35 "shots/$screen.png" --out "shots/$screen.jpg" >/dev/null
+          done
+          for f in shots/*.jpg; do
+            echo "SHOT_BEGIN $(basename $f)"
+            base64 -i "$f" | tr -d '\n'
+            echo
+            echo "SHOT_END"
+          done

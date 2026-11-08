@@ -96,20 +96,59 @@ extension Calendar {
 }
 
 extension ShoppingItem {
-    /// Adds items to the shopping list, skipping ones that are already on it (unchecked).
-    @discardableResult
-    static func add(_ names: [String], from recipeTitle: String, in context: ModelContext) -> Int {
-        let existing = (try? context.fetch(FetchDescriptor<ShoppingItem>())) ?? []
-        var seen = Set(existing.filter { !$0.isChecked }.map { $0.name.lowercased() })
-        var added = 0
-        for name in names {
-            let key = name.lowercased()
-            guard !name.isEmpty, !seen.contains(key) else { continue }
-            context.insert(ShoppingItem(name: name, fromRecipe: recipeTitle))
-            seen.insert(key)
-            added += 1
+    var parsed: ParsedIngredient {
+        var p = IngredientParser.parse(name)
+        if amount > 0 {
+            p.amount = amount
+            p.unit = CookUnit(rawValue: unit)
+            if p.unit == nil { p.countWord = unit }
         }
-        return added
+        return p
+    }
+
+    var aisle: String { aisleOverride.isEmpty ? GroceryAisle.classify(baseName.isEmpty ? name : baseName) : aisleOverride }
+
+    func apply(_ p: ParsedIngredient) {
+        amount = p.amount ?? 0
+        unit = p.unit?.rawValue ?? p.countWord
+        baseName = IngredientParser.key(for: p.name)
+        name = GroceryMath.describe(p)
+    }
+
+    /// Adds lines to the grocery list, combining with matching unchecked items when units are compatible.
+    /// Returns how many lines were added or merged.
+    @discardableResult
+    static func add(_ lines: [String], from recipeTitle: String, in context: ModelContext) -> Int {
+        let existing = ((try? context.fetch(FetchDescriptor<ShoppingItem>())) ?? []).filter { !$0.isChecked }
+        var pool = existing
+        var changed = 0
+        for line in lines {
+            let text = line.replacingOccurrences(of: " (estimated)", with: "")
+                .replacingOccurrences(of: " — amount not given", with: "")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !text.isEmpty else { continue }
+            let p = IngredientParser.parse(text)
+            let key = IngredientParser.key(for: p.name)
+            if let match = pool.first(where: { GroceryMath.combine($0.parsed, p) != nil }),
+               let merged = GroceryMath.combine(match.parsed, p) {
+                match.apply(merged)
+                if !recipeTitle.isEmpty && !match.fromRecipe.contains(recipeTitle) {
+                    match.fromRecipe = match.fromRecipe.isEmpty ? recipeTitle : match.fromRecipe + ", " + recipeTitle
+                }
+                changed += 1
+                continue
+            }
+            // Same ingredient without amounts (e.g. "salt") — don't add twice.
+            if p.amount == nil, pool.contains(where: { $0.amount == 0 && IngredientParser.key(for: $0.parsed.name) == key && !key.isEmpty }) {
+                continue
+            }
+            let item = ShoppingItem(name: text, fromRecipe: recipeTitle)
+            if p.amount != nil { item.apply(p) } else { item.baseName = key }
+            context.insert(item)
+            pool.append(item)
+            changed += 1
+        }
+        return changed
     }
 }
 
@@ -177,8 +216,18 @@ enum Backup {
         let data = try Data(contentsOf: url)
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
-        let file = try decoder.decode(BackupFile.self, from: data)
         var titles = Set(existing.map { $0.title.lowercased() })
+        guard let file = try? decoder.decode(BackupFile.self, from: data) else {
+            // Also accept standard schema.org Recipe JSON files.
+            let obj = try JSONSerialization.jsonObject(with: data)
+            guard let imported = RecipeImporter.recipe(fromJSONObject: obj) else { throw CocoaError(.fileReadCorruptFile) }
+            guard !titles.contains(imported.title.lowercased()) else { return 0 }
+            var d = ImportSession.draft(from: imported)
+            d.sourceKind = "file"
+            d.platform = ""
+            context.insert(d.makeRecipe())
+            return 1
+        }
         var added = 0
         for item in file.recipes where !titles.contains(item.title.lowercased()) {
             context.insert(item.makeRecipe())

@@ -7,11 +7,50 @@ private struct Line: Identifiable, Hashable {
     var text: String
 }
 
+/// Autosaved copy of an in-progress edit, so nothing is lost if the app closes.
+struct EditDraft: Codable, Equatable {
+    var title = "", summary = "", category = "", servings = 4, prepMinutes = 0, cookMinutes = 0
+    var ingredients: [String] = [], steps: [String] = [], notes = "", sourceURL = ""
+    var tags: [String] = [], cuisine = "", difficulty = "", temperature = ""
+    var savedAt = Date()
+
+    static func key(_ uid: String?) -> String { "editDraft.\(uid ?? "new")" }
+
+    static func load(_ uid: String?) -> EditDraft? {
+        guard let d = UserDefaults.standard.data(forKey: key(uid)) else { return nil }
+        return try? JSONDecoder().decode(EditDraft.self, from: d)
+    }
+
+    func save(_ uid: String?) {
+        if let d = try? JSONEncoder().encode(self) { UserDefaults.standard.set(d, forKey: Self.key(uid)) }
+    }
+
+    static func clear(_ uid: String?) { UserDefaults.standard.removeObject(forKey: key(uid)) }
+
+    /// Equality ignores when the draft was saved.
+    static func == (a: EditDraft, b: EditDraft) -> Bool {
+        a.title == b.title && a.summary == b.summary && a.category == b.category && a.servings == b.servings
+            && a.prepMinutes == b.prepMinutes && a.cookMinutes == b.cookMinutes && a.ingredients == b.ingredients
+            && a.steps == b.steps && a.notes == b.notes && a.sourceURL == b.sourceURL && a.tags == b.tags
+            && a.cuisine == b.cuisine && a.difficulty == b.difficulty && a.temperature == b.temperature
+    }
+
+    func sameContent(as o: EditDraft) -> Bool { self == o }
+}
+
 struct RecipeEditView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
+    @Environment(ToastCenter.self) private var toasts
 
     let recipe: Recipe?
+    @State private var tags: [String] = []
+    @State private var cuisine = ""
+    @State private var difficulty = ""
+    @State private var temperature = ""
+    @State private var newTag = ""
+    @State private var pendingDraft: EditDraft?
+    @State private var original = EditDraft()
 
     @State private var title = ""
     @State private var summary = ""
@@ -32,9 +71,19 @@ struct RecipeEditView: View {
     @State private var showingBulkIngredients = false
     @State private var bulkText = ""
 
-    init(recipe: Recipe?) {
+    init(recipe: Recipe?, prefillTitle: String = "", prefillSource: String = "") {
         self.recipe = recipe
+        if recipe == nil {
+            let d = UserDefaults.standard.integer(forKey: SettingsKey.defaultServings)
+            _servings = State(initialValue: d > 0 ? d : 4)
+            _title = State(initialValue: prefillTitle)
+            _sourceURL = State(initialValue: prefillSource)
+        }
         if let r = recipe {
+            _tags = State(initialValue: r.tags)
+            _cuisine = State(initialValue: r.cuisine)
+            _difficulty = State(initialValue: r.difficulty)
+            _temperature = State(initialValue: r.temperature)
             _title = State(initialValue: r.title)
             _summary = State(initialValue: r.summary)
             _category = State(initialValue: r.category)
@@ -49,6 +98,20 @@ struct RecipeEditView: View {
         }
     }
 
+    private var snapshot: EditDraft {
+        EditDraft(title: title, summary: summary, category: category, servings: servings, prepMinutes: prepMinutes,
+                  cookMinutes: cookMinutes, ingredients: ingredients.map(\.text), steps: steps.map(\.text), notes: notes,
+                  sourceURL: sourceURL, tags: tags, cuisine: cuisine, difficulty: difficulty, temperature: temperature)
+    }
+
+    private func restore(_ d: EditDraft) {
+        title = d.title; summary = d.summary; category = d.category.isEmpty ? category : d.category
+        servings = d.servings; prepMinutes = d.prepMinutes; cookMinutes = d.cookMinutes
+        ingredients = d.ingredients.map { Line(text: $0) }; steps = d.steps.map { Line(text: $0) }
+        notes = d.notes; sourceURL = d.sourceURL; tags = d.tags; cuisine = d.cuisine
+        difficulty = d.difficulty; temperature = d.temperature
+    }
+
     private var canSave: Bool {
         !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
@@ -56,6 +119,19 @@ struct RecipeEditView: View {
     var body: some View {
         NavigationStack {
             Form {
+                if let d = pendingDraft {
+                    Section {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Label("Unsaved changes from \(d.savedAt.formatted(.relative(presentation: .named)))", systemImage: "clock.arrow.circlepath")
+                                .font(.subheadline.weight(.semibold))
+                            HStack {
+                                Button("Restore") { restore(d); pendingDraft = nil }.buttonStyle(.borderedProminent)
+                                Button("Discard") { EditDraft.clear(recipe?.uid); pendingDraft = nil }.buttonStyle(.bordered)
+                            }
+                            .controlSize(.small)
+                        }
+                    }
+                }
                 Section {
                     photoPicker
                     TextField("Recipe name", text: $title)
@@ -71,6 +147,39 @@ struct RecipeEditView: View {
                     Stepper("Serves \(servings)", value: $servings, in: 1...100)
                     Stepper("Prep: \(prepMinutes) min", value: $prepMinutes, in: 0...1440, step: 5)
                     Stepper("Cook: \(cookMinutes) min", value: $cookMinutes, in: 0...1440, step: 5)
+                    TextField("Oven / cooking temperature (optional)", text: $temperature)
+                    TextField("Cuisine (e.g. Italian)", text: $cuisine)
+                    Picker("Difficulty", selection: $difficulty) {
+                        Text("Not set").tag("")
+                        ForEach(Recipe.difficulties, id: \.self) { Text($0).tag($0) }
+                    }
+                }
+
+                Section("Tags") {
+                    if !tags.isEmpty {
+                        FlowLayout(spacing: 6) {
+                            ForEach(tags, id: \.self) { t in
+                                Button { tags.removeAll { $0 == t } } label: {
+                                    HStack(spacing: 4) { Text(t); Image(systemName: "xmark") }
+                                        .font(.caption.weight(.semibold))
+                                        .padding(.horizontal, 10).padding(.vertical, 5)
+                                        .background(Color.accentColor, in: Capsule())
+                                        .foregroundStyle(.white)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+                    FlowLayout(spacing: 6) {
+                        ForEach(Recipe.suggestedTags.filter { !tags.contains($0) }, id: \.self) { t in
+                            Button { tags.append(t) } label: { TagChip(text: "+ " + t) }
+                                .buttonStyle(.plain)
+                        }
+                    }
+                    HStack {
+                        TextField("Custom tag", text: $newTag).onSubmit(addTag)
+                        Button("Add", action: addTag).disabled(newTag.trimmingCharacters(in: .whitespaces).isEmpty)
+                    }
                 }
 
                 Section {
@@ -127,11 +236,21 @@ struct RecipeEditView: View {
                         .autocorrectionDisabled()
                 }
             }
+            .onAppear {
+                original = snapshot
+                if let d = EditDraft.load(recipe?.uid), !d.sameContent(as: snapshot) { pendingDraft = d }
+            }
+            .onChange(of: snapshot) { _, new in
+                if pendingDraft == nil && !new.sameContent(as: original) { new.save(recipe?.uid) }
+            }
             .navigationTitle(recipe == nil ? "New Recipe" : "Edit Recipe")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button("Cancel") {
+                        EditDraft.clear(recipe?.uid)
+                        dismiss()
+                    }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save", action: save).bold().disabled(!canSave)
@@ -218,6 +337,13 @@ struct RecipeEditView: View {
         )
     }
 
+    private func addTag() {
+        let t = newTag.trimmingCharacters(in: .whitespaces)
+        guard !t.isEmpty, !tags.contains(t) else { return }
+        tags.append(t)
+        newTag = ""
+    }
+
     private func addIngredient() {
         let t = newIngredient.trimmingCharacters(in: .whitespaces)
         guard !t.isEmpty else { return }
@@ -255,7 +381,18 @@ struct RecipeEditView: View {
         target.notes = notes
         target.sourceURL = sourceURL.trimmingCharacters(in: .whitespaces)
         target.photoData = photoData
-        if recipe == nil { context.insert(target) }
+        target.tags = tags
+        target.cuisine = cuisine.trimmingCharacters(in: .whitespaces)
+        target.difficulty = difficulty
+        target.temperature = temperature.trimmingCharacters(in: .whitespaces)
+        if recipe == nil {
+            if !target.sourceURL.isEmpty, let u = URL(string: target.sourceURL) {
+                target.sourcePlatform = VideoPlatform.detect(u) == .website ? "" : VideoPlatform.detect(u).rawValue
+            }
+            context.insert(target)
+        }
+        EditDraft.clear(recipe?.uid)
+        toasts.show(recipe == nil ? "Recipe added" : "Changes saved")
         dismiss()
     }
 }

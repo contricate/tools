@@ -4,7 +4,7 @@ struct ImportedRecipe {
     var title = ""
     var summary = ""
     var category = "Dinner"
-    var servings = 4
+    var servings = 0
     var prepMinutes = 0
     var cookMinutes = 0
     var ingredients: [String] = []
@@ -73,6 +73,11 @@ enum RecipeImporter {
         return nil
     }
 
+    /// Reads a schema.org Recipe from an already-parsed JSON object (e.g. a .json recipe file).
+    static func recipe(fromJSONObject obj: Any) -> ImportedRecipe? {
+        findRecipe(in: obj, depth: 0).map(build)
+    }
+
     private static func isRecipeType(_ t: Any?) -> Bool {
         if let s = t as? String { return s.lowercased() == "recipe" }
         if let a = t as? [Any] { return a.contains { ($0 as? String)?.lowercased() == "recipe" } }
@@ -99,7 +104,7 @@ enum RecipeImporter {
         if r.summary.count > 300 { r.summary = String(r.summary.prefix(297)) + "…" }
         r.ingredients = strings(d["recipeIngredient"] ?? d["ingredients"]).map(clean).filter { !$0.isEmpty }
         r.steps = instructions(d["recipeInstructions"]).map(clean).filter { !$0.isEmpty }
-        r.servings = yield(d["recipeYield"]) ?? 4
+        r.servings = yield(d["recipeYield"]) ?? 0
         r.prepMinutes = minutes(d["prepTime"] as? String)
         r.cookMinutes = minutes(d["cookTime"] as? String)
         if r.prepMinutes == 0 && r.cookMinutes == 0 {
