@@ -144,7 +144,7 @@ enum IngredientParser {
                 return finish(result)
             }
             // Glued units like "200g" are handled by parseQuantity stopping at "g".
-            if countWords.contains(lower) {
+            if countWords.contains(lower) && words.count > 1 {
                 result.countWord = lower
                 result.name = words.dropFirst().joined(separator: " ")
                 return finish(result)
@@ -318,7 +318,11 @@ enum GroceryMath {
         if let u = p.unit {
             return "\(UnitConverter.format(a, unit: u)) \(u.symbol(plural: a > 1)) \(name)"
         }
-        let word = p.countWord.isEmpty ? "" : (a > 1 ? pluralize(p.countWord) : IngredientParser.singular(p.countWord)) + " "
+        let adjectives: Set<String> = ["large", "medium", "small", "whole"]
+        let word: String
+        if p.countWord.isEmpty { word = "" }
+        else if adjectives.contains(p.countWord) { word = p.countWord + " " }
+        else { word = (a > 1 ? pluralize(p.countWord) : IngredientParser.singular(p.countWord)) + " " }
         return "\(IngredientScaler.format(a)) \(word)\(name)"
     }
 

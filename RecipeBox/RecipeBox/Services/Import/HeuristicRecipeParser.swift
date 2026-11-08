@@ -69,6 +69,8 @@ enum HeuristicRecipeParser {
 
         for raw in normalizedLines(text) {
             if isHashtagLine(raw) { continue }
+            if raw.range(of: #"^(serves|servings?|makes|yields?|prep time|cook time|total time)\b"#,
+                         options: [.regularExpression, .caseInsensitive]) != nil { continue }
             let (ingH, ingRest) = isHeader(raw, ingredientHeaders)
             if ingH {
                 section = .ingredients; sawHeader = true
